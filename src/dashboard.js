@@ -1,5 +1,5 @@
 import React from "react";
-import { getAddress, signTransaction, signMessage  } from "sats-connect";
+import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -18,7 +18,7 @@ class Dashboard extends React.Component {
         purposes: ["ordinals", "payment"],
         message: "Address for receiving Ordinals",
         network: {
-          type: "Mainnet",
+          type: "Testnet",
         },
       },
       onFinish: (response) => {
@@ -57,12 +57,12 @@ class Dashboard extends React.Component {
   };
 
   onSignMessageClick = async () => {
-    const signMessageOptions = {
+    const SendBtcTransactionOptions = {
       payload: {
         network: {
           type: "Mainnet",
         },
-        address: this.state.ordinalsAddress,
+        address: 'bc1px7mgdeysk3jpm3dzj736cnt3vlc8waqhdnqahhfxd2j4ugyfefcszdrfqg',
         message: "Sign Transaction",
       },
       onFinish: (response) => {
@@ -70,7 +70,25 @@ class Dashboard extends React.Component {
       },
       onCancel: () => alert("Canceled"),
     };
-    await signMessage(signMessageOptions);
+    await signMessage(SendBtcTransactionOptions);
+  }
+
+  onSendBtcClick = async () => {
+    const sendBtcOptions = {
+      payload: {
+        network: {
+          type: "Testnet",
+        },
+        satsAmount: '500',
+        recipientAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
+        message: "Sign Transaction",
+      },
+      onFinish: (response) => {
+        alert(response);
+      },
+      onCancel: () => alert("Canceled"),
+    };
+    await sendBtcTransaction(sendBtcOptions);
   }
 
   render() {
@@ -110,6 +128,15 @@ class Dashboard extends React.Component {
               onClick={this.onSignMessageClick}
             >
               Sign message
+            </button>
+          </div>
+
+          <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+            <button
+              style={{ height: 30, width: 180 }}
+              onClick={this.onSendBtcClick}
+            >
+              Send BTC Transaction
             </button>
           </div>
           <br />
