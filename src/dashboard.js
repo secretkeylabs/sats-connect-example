@@ -57,7 +57,7 @@ class Dashboard extends React.Component {
   };
 
   onSignMessageClick = async () => {
-    const SendBtcTransactionOptions = {
+    const signMessageOptions = {
       payload: {
         network: {
           type: "Mainnet",
@@ -70,7 +70,7 @@ class Dashboard extends React.Component {
       },
       onCancel: () => alert("Canceled"),
     };
-    await signMessage(SendBtcTransactionOptions);
+    await signMessage(signMessageOptions);
   }
 
   onSendBtcClick = async () => {
