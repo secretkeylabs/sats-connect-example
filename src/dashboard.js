@@ -22,7 +22,6 @@ class Dashboard extends React.Component {
         },
       },
       onFinish: (response) => {
-        console.log(response)
         this.setState({
           ordinalsAddress: response.addresses[0].address,
           paymentAddress: response.addresses[1].address,
@@ -67,7 +66,6 @@ class Dashboard extends React.Component {
         message: "Sign Transaction",
       },
       onFinish: (response) => {
-        console.log(response)
         alert(response);
       },
       onCancel: () => alert("Canceled"),
