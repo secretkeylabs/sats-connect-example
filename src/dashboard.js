@@ -18,10 +18,11 @@ class Dashboard extends React.Component {
         purposes: ["ordinals", "payment"],
         message: "Address for receiving Ordinals",
         network: {
-          type: "Testnet",
+          type: "Mainnet",
         },
       },
       onFinish: (response) => {
+        console.log(response)
         this.setState({
           ordinalsAddress: response.addresses[0].address,
           paymentAddress: response.addresses[1].address,
@@ -62,10 +63,11 @@ class Dashboard extends React.Component {
         network: {
           type: "Mainnet",
         },
-        address: 'bc1px7mgdeysk3jpm3dzj736cnt3vlc8waqhdnqahhfxd2j4ugyfefcszdrfqg',
+        address: this.state.ordinalsAddress,
         message: "Sign Transaction",
       },
       onFinish: (response) => {
+        console.log(response)
         alert(response);
       },
       onCancel: () => alert("Canceled"),
@@ -77,11 +79,11 @@ class Dashboard extends React.Component {
     const sendBtcOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: "Mainnet",
         },
-        satsAmount: '500',
-        recipientAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
-        message: "Sign Transaction",
+        satsAmount: '5700',
+        recipientAddress: '3Codr66EYyhkhWy1o2RLmrER7TaaHmtrZe',
+        message: "Send BTC transaction",
       },
       onFinish: (response) => {
         alert(response);
