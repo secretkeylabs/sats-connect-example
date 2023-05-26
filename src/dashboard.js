@@ -79,9 +79,8 @@ class Dashboard extends React.Component {
         network: {
           type: "Mainnet",
         },
-        satsAmount: '5700',
+        amountSats: '5700',
         recipientAddress: '3Codr66EYyhkhWy1o2RLmrER7TaaHmtrZe',
-        message: "Send BTC transaction",
       },
       onFinish: (response) => {
         alert(response);
