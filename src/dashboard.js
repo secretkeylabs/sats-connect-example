@@ -77,10 +77,11 @@ class Dashboard extends React.Component {
     const sendBtcOptions = {
       payload: {
         network: {
-          type: "Mainnet",
+          type: "Testnet",
         },
-        amountSats: '5700',
-        recipientAddress: '3Codr66EYyhkhWy1o2RLmrER7TaaHmtrZe',
+        amountSats: ['5700', '5800'],
+        recipientAddress: ['2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4', '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR'],
+        senderAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
       },
       onFinish: (response) => {
         alert(response);
