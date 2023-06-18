@@ -1,5 +1,7 @@
 import React from "react";
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
+import * as btc from '@scure/btc-signer';
+import { hex, base64 } from '@scure/base'
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -18,13 +20,15 @@ class Dashboard extends React.Component {
         purposes: ["ordinals", "payment"],
         message: "Address for receiving Ordinals",
         network: {
-          type: "Mainnet",
+          type: "Testnet",
         },
       },
       onFinish: (response) => {
         this.setState({
           ordinalsAddress: response.addresses[0].address,
           paymentAddress: response.addresses[1].address,
+          ordinalsPublicKey: response.addresses[0].publicKey,
+          paymentPublicKey: response.addresses[1].publicKey,
         });
       },
       onCancel: () => alert("Request canceled"),
@@ -32,19 +36,80 @@ class Dashboard extends React.Component {
     await getAddress(getAddressOptions);
   };
 
+  getUnspent = async (address) => {
+    const url = `https://mempool.space/testnet/api/address/${address}/utxo`
+    const response = await fetch(url)
+    return response.json()
+  }
+
+  createPsbt = async (publicKeyString, unspentOutputs, recipient) => {
+    const bitcoinTestnet = {
+      bech32: 'tb',
+      pubKeyHash: 0x6f,
+      scriptHash: 0xc4,
+      wif: 0xef,
+    }
+
+    // choose first unspent output
+    const output = unspentOutputs[0]
+
+    const publicKey = hex.decode(publicKeyString)
+    const tx = new btc.Transaction();
+
+    const p2wpkh2 = btc.p2wpkh(publicKey, bitcoinTestnet);
+    const p2sh = btc.p2sh(p2wpkh2, bitcoinTestnet);
+
+    const fee = 3000n // set the miner fee amount
+    const recipientAmount = BigInt(output.value) - fee
+
+    tx.addInput({
+      txid: output.txid,
+      index: output.vout,
+      witnessUtxo: {
+        script: p2sh.script ? p2sh.script : Buffer.alloc(0),
+        amount: BigInt(output.value),
+      },
+      redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
+      witnessScript: p2sh.witnessScript,
+      sighashType: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY
+    })
+
+    tx.addOutputAddress(recipient, recipientAmount, bitcoinTestnet)
+
+    const psbt = tx.toPSBT(0)
+    const psbtB64 = base64.encode(psbt)
+    return psbtB64
+  }
+
   onSignTransactionClick = async () => {
+    const unspentOutputs = await this.getUnspent(this.state.paymentAddress)
+
+    if (unspentOutputs.length < 1) {
+      alert('No unspent outputs found for address')
+    }
+    
+    // create psbt sending from payment address to ordinals address
+    const outputRecipient = this.state.ordinalsAddress;
+
+    const psbtBase64 = await this.createPsbt(
+      this.state.paymentPublicKey, 
+      unspentOutputs, 
+      outputRecipient
+    )
+
     const signPsbtOptions = {
       payload: {
         network: {
           type: "Testnet",
         },
         message: "Sign Transaction",
-        psbtBase64: `cHNidP8BAKcCAAAAAtJVbmYvrS64adekw4rhCtbWQNNs9IhWFyNrhYIdkG5dAAAAAAD/////hNCzRVacJR32LJ/chDNUO9B0C3/ci9ZJzHIClfjHLSAAAAAAAP////8CoIYBAAAAAAAiUSCjXEwEb409zg9tZ4NJlmnPqVZaF2TYm9Q1txG7GQ/Q3dB+AQAAAAAAF6kUBE+9kGn9tJlLagtxL54ozfiuyqGHAAAAAAABASughgEAAAAAACJRIDmZV7+7TrMlgI87KFqU2MFVtCS9fmg3f4ZF8zwLgUEtARcguZB1Id24Xg5qN2IrfGhe+9yK5TozSSitvRLPIErU5xcAAQEgoIYBAAAAAAAXqRS9FdmY/QjP0cXH1/+o/144F2orn4ciAgN1Cual4w1uAxLWT+SalvUzyZpqp5eYW7Hlychubra2iEcwRAIgOHUp0YFRZXOrpz5V90PLaPDF/uhCPKLTLbEwVtA7wjsCICPkH0tjb3bS+jmqv/6R746ASxFWGcB8/N41rSHO+4cVAQEEFgAUGAo7GWfcpwS2XI7SsZEN06q8yTIAAAA=`,
+        psbtBase64: psbtBase64,
         broadcast: false,
         inputsToSign: [
           {
-            address: this.state.ordinalsAddress,
+            address: this.state.paymentAddress,
             signingIndexes: [0],
+            sigHash: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY,
           },
         ],
       },
@@ -60,7 +125,7 @@ class Dashboard extends React.Component {
     const signMessageOptions = {
       payload: {
         network: {
-          type: "Mainnet",
+          type: "Testnet",
         },
         address: this.state.ordinalsAddress,
         message: "Sign Transaction",
