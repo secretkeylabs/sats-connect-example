@@ -1,5 +1,4 @@
 import React from "react";
-import BigNumber from 'bignumber.js';
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 
 class Dashboard extends React.Component {
@@ -87,7 +86,7 @@ class Dashboard extends React.Component {
           },
           {
             address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
-            amountSats: 5800,
+            amountSats: 1500,
           },
         ],
         senderAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
