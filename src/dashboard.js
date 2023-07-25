@@ -1,3 +1,6 @@
+
+
+
 import React from "react";
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 import * as btc from '@scure/btc-signer';
@@ -54,7 +57,9 @@ class Dashboard extends React.Component {
     const output = unspentOutputs[0]
 
     const publicKey = hex.decode(publicKeyString)
-    const tx = new btc.Transaction();
+    const tx = new btc.Transaction({
+      allowUnknowOutput: true,
+    });
 
     const p2wpkh2 = btc.p2wpkh(publicKey, bitcoinTestnet);
     const p2sh = btc.p2sh(p2wpkh2, bitcoinTestnet);
@@ -76,8 +81,17 @@ class Dashboard extends React.Component {
 
     tx.addOutputAddress(recipient, recipientAmount, bitcoinTestnet)
 
+    tx.addOutput({
+      script: btc.Script.encode([
+        'RETURN',
+        new TextEncoder().encode('SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX')
+      ]),
+      amount: 0n,
+    })
+    console.log("psbt")
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
+    console.log(psbtB64)
     return psbtB64
   }
 
@@ -87,7 +101,6 @@ class Dashboard extends React.Component {
     if (unspentOutputs.length < 1) {
       alert('No unspent outputs found for address')
     }
-    
     // create psbt sending from payment address to ordinals address
     const outputRecipient = this.state.ordinalsAddress;
 
@@ -220,3 +233,4 @@ class Dashboard extends React.Component {
 }
 
 export default Dashboard;
+
