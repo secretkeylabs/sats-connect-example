@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 import * as btc from '@scure/btc-signer';
@@ -103,7 +100,6 @@ class Dashboard extends React.Component {
   }
 
   onSignTransactionClick = async () => {
-    console.log(this.state.paymentAddress)
     const unspentOutputs = await this.getUnspent(this.state.paymentAddress)
 
     if (unspentOutputs.length < 1) {
@@ -124,7 +120,7 @@ class Dashboard extends React.Component {
           type: "Testnet",
         },
         message: "Sign Transaction",
-        psbtBase64: 'cHNidP8BAMcCAAAAAWinnh5PHRxd/irygRIZ01wYNus4rfqceLvBJpHBnnDBAgAAAAD/////A3zuCAAAAAAAIlEg4tOII63MFBCFT7sOMDev4FqPPj+LJ656Ws2g/nadQgsAAAAAAAAAACypdilTUDFLU045R1oyMUY0QjNEWkQ0VFE5SlpYS0ZUWkUzV1c1R1hSRVFLWKAPAAAAAAAAK2opU1AxVEEyNEtERVZQU0pQQzdLNlE0MU1GNVBCWU1HUkFZR0tRSDIwQ04AAAAAAAEBIDT6CAAAAAAAF6kUuLtec+4OTelW694kNrOYos0JJOKHAQMEgwAAAAEEFgAU2lmKv1jRuRXKY+xePveZ9Jk+MO8AAAAA',
+        psbtBase64: psbtBase64,
         broadcast: false,
         inputsToSign: [
           {
@@ -159,32 +155,6 @@ class Dashboard extends React.Component {
     await signMessage(signMessageOptions);
   }
 
-  onSendBtcClick = async () => {
-    
-    const sendBtcOptions = {
-      payload: {
-        network: {
-          type: "Testnet",
-        },
-        recipients: [
-          {
-            address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
-            amountSats: 5700,
-          },
-          {
-            address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
-            amountSats: 1500,
-          },
-        ],
-        senderAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
-      },
-      onFinish: (response) => {
-        alert(response);
-      },
-      onCancel: () => alert("Canceled"),
-    };
-    await sendBtcTransaction(sendBtcOptions);
-  }
 
   render() {
     return (
@@ -223,15 +193,6 @@ class Dashboard extends React.Component {
               onClick={this.onSignMessageClick}
             >
               Sign message
-            </button>
-          </div>
-
-          <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
-            <button
-              style={{ height: 30, width: 180 }}
-              onClick={this.onSendBtcClick}
-            >
-              Send BTC Transaction
             </button>
           </div>
           <br />
