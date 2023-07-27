@@ -83,19 +83,27 @@ class Dashboard extends React.Component {
 
     tx.addOutput({
       script: btc.Script.encode([
-        'RETURN',
+        'HASH160',
+        'DUP',
         new TextEncoder().encode('SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX')
       ]),
       amount: 0n,
     })
-    console.log("psbt")
+
+    tx.addOutput({
+      script: btc.Script.encode([
+        'RETURN',
+        new TextEncoder().encode('SP1TA24KDEVPSJPC7K6Q41MF5PBYMGRAYGKQH20CN')
+      ]),
+      amount: BigInt(4000),
+    })
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
-    console.log(psbtB64)
     return psbtB64
   }
 
   onSignTransactionClick = async () => {
+    console.log(this.state.paymentAddress)
     const unspentOutputs = await this.getUnspent(this.state.paymentAddress)
 
     if (unspentOutputs.length < 1) {
@@ -116,7 +124,7 @@ class Dashboard extends React.Component {
           type: "Testnet",
         },
         message: "Sign Transaction",
-        psbtBase64: psbtBase64,
+        psbtBase64: 'cHNidP8BAMcCAAAAAWinnh5PHRxd/irygRIZ01wYNus4rfqceLvBJpHBnnDBAgAAAAD/////A3zuCAAAAAAAIlEg4tOII63MFBCFT7sOMDev4FqPPj+LJ656Ws2g/nadQgsAAAAAAAAAACypdilTUDFLU045R1oyMUY0QjNEWkQ0VFE5SlpYS0ZUWkUzV1c1R1hSRVFLWKAPAAAAAAAAK2opU1AxVEEyNEtERVZQU0pQQzdLNlE0MU1GNVBCWU1HUkFZR0tRSDIwQ04AAAAAAAEBIDT6CAAAAAAAF6kUuLtec+4OTelW694kNrOYos0JJOKHAQMEgwAAAAEEFgAU2lmKv1jRuRXKY+xePveZ9Jk+MO8AAAAA',
         broadcast: false,
         inputsToSign: [
           {
@@ -152,6 +160,7 @@ class Dashboard extends React.Component {
   }
 
   onSendBtcClick = async () => {
+    
     const sendBtcOptions = {
       payload: {
         network: {
