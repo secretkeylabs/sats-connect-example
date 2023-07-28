@@ -42,7 +42,14 @@ class Dashboard extends React.Component {
     return response.json()
   }
 
-  createPsbt = async (publicKeyString, unspentOutputs, recipient) => {
+  createPsbt = async (
+    paymentPublicKeyString,
+    ordinalsPublicKeyString, 
+    paymentUnspentOutputs, 
+    ordinalsUnspentOutputs,
+    recipient1,
+    recipient2,
+  ) => {
     const bitcoinTestnet = {
       bech32: 'tb',
       pubKeyHash: 0x6f,
@@ -51,30 +58,56 @@ class Dashboard extends React.Component {
     }
 
     // choose first unspent output
-    const output = unspentOutputs[0]
+    const paymentOutput = paymentUnspentOutputs[0]
+    const ordinalOutput = ordinalsUnspentOutputs[0]
 
-    const publicKey = hex.decode(publicKeyString)
+    const paymentPublicKey = hex.decode(paymentPublicKeyString)
+    const ordinalPublicKey = hex.decode(ordinalsPublicKeyString)
+    
     const tx = new btc.Transaction();
 
-    const p2wpkh2 = btc.p2wpkh(publicKey, bitcoinTestnet);
-    const p2sh = btc.p2sh(p2wpkh2, bitcoinTestnet);
+    // create segwit spend
+    const p2wpkh = btc.p2wpkh(paymentPublicKey, bitcoinTestnet);
+    const p2sh = btc.p2sh(p2wpkh, bitcoinTestnet);
 
-    const fee = 3000n // set the miner fee amount
-    const recipientAmount = BigInt(output.value) - fee
+    // create taproot spend
+    const p2tr = btc.p2tr(ordinalPublicKey, undefined, bitcoinTestnet);
 
+    // set transfer amount and calculate change
+    const fee = 300n // set the miner fee amount
+    const recipient1Amount = BigInt(Math.min(paymentOutput.value, 3000)) - fee
+    const recipient2Amount = BigInt(Math.min(ordinalOutput.value, 3000))
+    const total = recipient1Amount + recipient2Amount
+    const changeAmount = BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee
+
+    // payment input
     tx.addInput({
-      txid: output.txid,
-      index: output.vout,
+      txid: paymentOutput.txid,
+      index: paymentOutput.vout,
       witnessUtxo: {
         script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-        amount: BigInt(output.value),
+        amount: BigInt(paymentOutput.value),
       },
       redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
       witnessScript: p2sh.witnessScript,
       sighashType: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY
     })
 
-    tx.addOutputAddress(recipient, recipientAmount, bitcoinTestnet)
+    // ordinals input
+    tx.addInput({
+      txid: ordinalOutput.txid,
+      index: ordinalOutput.vout,
+      witnessUtxo: {
+        script: p2tr.script,
+        amount: BigInt(ordinalOutput.value),
+      },
+      tapInternalKey: ordinalPublicKey,
+      sighashType: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY
+    })
+
+    tx.addOutputAddress(recipient1, recipient1Amount, bitcoinTestnet)
+    tx.addOutputAddress(recipient2, recipient2Amount, bitcoinTestnet)
+    tx.addOutputAddress(recipient2, changeAmount, bitcoinTestnet)
 
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
@@ -82,19 +115,28 @@ class Dashboard extends React.Component {
   }
 
   onSignTransactionClick = async () => {
-    const unspentOutputs = await this.getUnspent(this.state.paymentAddress)
+    const paymentUnspentOutputs = await this.getUnspent(this.state.paymentAddress);
+    const ordinalsUnspentOutputs = await this.getUnspent(this.state.ordinalsAddress);
 
-    if (unspentOutputs.length < 1) {
-      alert('No unspent outputs found for address')
+    if (paymentUnspentOutputs.length < 1) {
+      alert('No unspent outputs found for payment address')
     }
     
+    if (ordinalsUnspentOutputs.length < 1) {
+      alert('No unspent outputs found for ordinals address')
+    }
+
     // create psbt sending from payment address to ordinals address
-    const outputRecipient = this.state.ordinalsAddress;
+    const outputRecipient1 = this.state.ordinalsAddress;
+    const outputRecipient2 = this.state.paymentAddress;
 
     const psbtBase64 = await this.createPsbt(
       this.state.paymentPublicKey, 
-      unspentOutputs, 
-      outputRecipient
+      this.state.ordinalsPublicKey,
+      paymentUnspentOutputs, 
+      ordinalsUnspentOutputs,
+      outputRecipient1,
+      outputRecipient2
     )
 
     const signPsbtOptions = {
@@ -111,6 +153,11 @@ class Dashboard extends React.Component {
             signingIndexes: [0],
             sigHash: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY,
           },
+          {
+            address: this.state.ordinalsAddress,
+            signingIndexes: [1],
+            sigHash: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY,
+          }
         ],
       },
       onFinish: (response) => {
@@ -147,14 +194,14 @@ class Dashboard extends React.Component {
         recipients: [
           {
             address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
-            amountSats: 5700,
+            amountSats: 1500,
           },
           {
             address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
             amountSats: 1500,
           },
         ],
-        senderAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
+        senderAddress: this.state.paymentAddress,
       },
       onFinish: (response) => {
         alert(response);
