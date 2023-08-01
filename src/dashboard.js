@@ -199,7 +199,7 @@ class Dashboard extends React.Component {
             amountSats: bigNum.toBigInt(),
           },
           {
-            address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
+            address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
             amountSats: 1600,
           },
         ],
