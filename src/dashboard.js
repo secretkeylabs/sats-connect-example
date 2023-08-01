@@ -2,6 +2,7 @@ import React from "react";
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 import * as btc from '@scure/btc-signer';
 import { hex, base64 } from '@scure/base'
+import { BigNumber} from '@ethersproject/bignumber';
 
 class Dashboard extends React.Component {
   constructor(props) {
@@ -186,6 +187,7 @@ class Dashboard extends React.Component {
   }
 
   onSendBtcClick = async () => {
+    const bigNum = BigNumber.from(1500);
     const sendBtcOptions = {
       payload: {
         network: {
@@ -194,11 +196,11 @@ class Dashboard extends React.Component {
         recipients: [
           {
             address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
-            amountSats: 1500,
+            amountSats: bigNum.toBigInt(),
           },
           {
-            address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
-            amountSats: 1500,
+            address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
+            amountSats: 1600,
           },
         ],
         senderAddress: this.state.paymentAddress,
