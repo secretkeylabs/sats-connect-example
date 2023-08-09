@@ -188,6 +188,7 @@ class Dashboard extends React.Component {
 
   onSendBtcClick = async () => {
     const bigNum = BigNumber.from(1500);
+    const bigNum2 = BigNumber.from(1600);
     const sendBtcOptions = {
       payload: {
         network: {
@@ -200,7 +201,7 @@ class Dashboard extends React.Component {
           },
           {
             address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
-            amountSats: 1600,
+            amountSats: bigNum2.toBigInt(),
           },
         ],
         senderAddress: this.state.paymentAddress,
