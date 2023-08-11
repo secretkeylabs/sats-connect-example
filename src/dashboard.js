@@ -202,16 +202,15 @@ class Dashboard extends React.Component {
     const sendBtcOptions = {
       payload: {
         network: {
-
-          type: "Testnet",
+          type: "Mainnet",
         },
         recipients: [
           {
-            address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
+            address: '3Codr66EYyhkhWy1o2RLmrER7TaaHmtrZe',
             amountSats: BigInt(1500),
           },
           {
-            address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
+            address: '3BMxVoc3NVt8BHakAh28WZrpQqQKCxV28U',
             amountSats: BigInt(1600),
           },
         ],
@@ -262,6 +261,15 @@ class Dashboard extends React.Component {
               onClick={this.onSignMessageClick}
             >
               Sign message
+            </button>
+          </div>
+
+          <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+            <button
+              style={{ height: 30, width: 180 }}
+              onClick={this.onSendBtcClick}
+            >
+              Send BTC Transaction
             </button>
           </div>
           <br />
