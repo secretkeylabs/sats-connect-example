@@ -43,7 +43,7 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
 
   if (network !== BitcoinNetworkType.Mainnet) {
     return (
-      <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+      <div className="container">
         <h3>Create text inscription</h3>
         <b>This is only available in Mainnet</b>
       </div>
@@ -51,7 +51,7 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
   }
 
   return (
-    <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+    <div className="container">
       <h3>Create text inscription</h3>
       <p>
         Creates an inscription with the desired text and content type. The
@@ -78,9 +78,7 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
             onChange={(e) => setContent(e.target.value)}
           />
         </p>
-        <button style={{ height: 30, width: 180 }} onClick={onCreateClick}>
-          Create inscription
-        </button>
+        <button onClick={onCreateClick}>Create inscription</button>
       </div>
     </div>
   );
