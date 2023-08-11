@@ -86,7 +86,7 @@ const SignTransaction = ({
   };
 
   return (
-    <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+    <div className="container">
       <h3>Sign transaction</h3>
       <p>
         Creates a PSBT sending the first UTXO from each of the payment and
@@ -94,12 +94,7 @@ const SignTransaction = ({
         payment address.
       </p>
       <div>
-        <button
-          style={{ height: 30, width: 180 }}
-          onClick={onSignTransactionClick}
-        >
-          Sign Transaction
-        </button>
+        <button onClick={onSignTransactionClick}>Sign Transaction</button>
       </div>
     </div>
   );

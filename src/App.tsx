@@ -1,23 +1,24 @@
-import { useState } from "react";
-
 import { AddressPurpose, BitcoinNetworkType, getAddress } from "sats-connect";
 
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
+import { useLocalStorage } from "./useLocalstorage";
 
 import "./App.css";
 
 function App() {
-  const [paymentAddress, setPaymentAddress] = useState<string | undefined>();
-  const [paymentPublicKey, setPaymentPublicKey] = useState<
-    string | undefined
-  >();
-  const [ordinalsAddress, setOrdinalsAddress] = useState<string | undefined>();
-  const [ordinalsPublicKey, setOrdinalsPublicKey] = useState<
-    string | undefined
-  >();
-  const [network, setNetwork] = useState(BitcoinNetworkType.Testnet);
+  const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
+  const [paymentPublicKey, setPaymentPublicKey] =
+    useLocalStorage("paymentPublicKey");
+  const [ordinalsAddress, setOrdinalsAddress] =
+    useLocalStorage("ordinalsAddress");
+  const [ordinalsPublicKey, setOrdinalsPublicKey] =
+    useLocalStorage("ordinalsPublicKey");
+  const [network, setNetwork] = useLocalStorage<BitcoinNetworkType>(
+    "network",
+    BitcoinNetworkType.Testnet
+  );
 
   const isReady =
     !!paymentAddress &&
@@ -25,16 +26,20 @@ function App() {
     !!ordinalsAddress &&
     !!ordinalsPublicKey;
 
+  const onWalletDisconnect = () => {
+    setPaymentAddress(undefined);
+    setPaymentPublicKey(undefined);
+    setOrdinalsAddress(undefined);
+    setOrdinalsPublicKey(undefined);
+  };
+
   const toggleNetwork = () => {
     setNetwork(
       network === BitcoinNetworkType.Testnet
         ? BitcoinNetworkType.Mainnet
         : BitcoinNetworkType.Testnet
     );
-    setPaymentAddress(undefined);
-    setPaymentPublicKey(undefined);
-    setOrdinalsAddress(undefined);
-    setOrdinalsPublicKey(undefined);
+    onWalletDisconnect();
   };
 
   const onConnectClick = async () => {
@@ -85,10 +90,16 @@ function App() {
 
   return (
     <div style={{ padding: 30 }}>
-      <h1>Sats Connect Test App</h1>
+      <h1>Sats Connect Test App - {network}</h1>
       <div>
-        {paymentAddress && <div>Payment Address: {paymentAddress}</div>}
-        {ordinalsAddress && <div>Ordinals Address: {ordinalsAddress}</div>}
+        <div>Payment Address: {paymentAddress}</div>
+        <div>Ordinals Address: {ordinalsAddress}</div>
+        <br />
+
+        <div className="container">
+          <h3>Disconnect wallet</h3>
+          <button onClick={onWalletDisconnect}>Disconnect</button>
+        </div>
 
         <SignTransaction
           paymentAddress={paymentAddress}

@@ -30,7 +30,7 @@ const SignMessage = ({ network, address }: Props) => {
   const signingDisabled = message.length === 0;
 
   return (
-    <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+    <div className="container">
       <h3>Sign message</h3>
       <p>
         <b>Address</b>
@@ -47,11 +47,7 @@ const SignMessage = ({ network, address }: Props) => {
       <br />
       <br />
       <div>
-        <button
-          style={{ height: 30, width: 180 }}
-          onClick={onSignMessageClick}
-          disabled={signingDisabled}
-        >
+        <button onClick={onSignMessageClick} disabled={signingDisabled}>
           Sign message
         </button>
       </div>

@@ -35,7 +35,7 @@ const SendBitcoin = ({ network, address }: Props) => {
 
   if (network !== BitcoinNetworkType.Testnet)
     return (
-      <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+      <div className="container">
         <h3>Send Bitcoin</h3>
         <div>Only available on testnet</div>
       </div>
@@ -44,7 +44,7 @@ const SendBitcoin = ({ network, address }: Props) => {
   const sendDisabled = recipient.length === 0;
 
   return (
-    <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
+    <div className="container">
       <h3>Send Bitcoin</h3>
       <p>
         <b>From address</b>
@@ -68,11 +68,7 @@ const SendBitcoin = ({ network, address }: Props) => {
           onChange={(e) => setAmount(BigInt(e.target.value))}
         />
       </p>
-      <button
-        style={{ height: 30, width: 180 }}
-        onClick={onSendBtcClick}
-        disabled={sendDisabled}
-      >
+      <button onClick={onSendBtcClick} disabled={sendDisabled}>
         Send BTC Transaction
       </button>
     </div>
