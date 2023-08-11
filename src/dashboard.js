@@ -122,7 +122,10 @@ class Dashboard extends React.Component {
       ]),
       amount: BigInt(4000),
     })
+<<<<<<< HEAD
 
+=======
+>>>>>>> 8fb0a3e8efc9d2fdc04ac6e89106dffc61434b65
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
     return psbtB64
@@ -203,16 +206,17 @@ class Dashboard extends React.Component {
     const sendBtcOptions = {
       payload: {
         network: {
+          
           type: "Testnet",
         },
         recipients: [
           {
             address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
-            amountSats: 1500,
+            amountSats: BigInt(1500),
           },
           {
             address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
-            amountSats: 1500,
+            amountSats: BigInt(1600),
           },
         ],
         senderAddress: this.state.paymentAddress,
@@ -262,15 +266,6 @@ class Dashboard extends React.Component {
               onClick={this.onSignMessageClick}
             >
               Sign message
-            </button>
-          </div>
-
-          <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
-            <button
-              style={{ height: 30, width: 180 }}
-              onClick={this.onSendBtcClick}
-            >
-              Send BTC Transaction
             </button>
           </div>
           <br />
