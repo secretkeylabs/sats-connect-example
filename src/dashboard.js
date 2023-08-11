@@ -122,10 +122,6 @@ class Dashboard extends React.Component {
       ]),
       amount: BigInt(4000),
     })
-<<<<<<< HEAD
-
-=======
->>>>>>> 8fb0a3e8efc9d2fdc04ac6e89106dffc61434b65
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
     return psbtB64
@@ -206,7 +202,7 @@ class Dashboard extends React.Component {
     const sendBtcOptions = {
       payload: {
         network: {
-          
+
           type: "Testnet",
         },
         recipients: [
