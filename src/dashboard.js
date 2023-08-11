@@ -1,6 +1,3 @@
-
-
-
 import React from "react";
 import { getAddress, signTransaction, signMessage, sendBtcTransaction  } from "sats-connect";
 import * as btc from '@scure/btc-signer';
@@ -23,7 +20,7 @@ class Dashboard extends React.Component {
         purposes: ["ordinals", "payment"],
         message: "Address for receiving Ordinals",
         network: {
-          type: "Testnet",
+          type: "Mainnet",
         },
       },
       onFinish: (response) => {
@@ -40,80 +37,126 @@ class Dashboard extends React.Component {
   };
 
   getUnspent = async (address) => {
-    const url = `https://mempool.space/testnet/api/address/${address}/utxo`
+    const url = `https://mempool.space/api/address/${address}/utxo`
     const response = await fetch(url)
     return response.json()
   }
 
-  createPsbt = async (publicKeyString, unspentOutputs, recipient) => {
-    const bitcoinTestnet = {
-      bech32: 'tb',
-      pubKeyHash: 0x6f,
-      scriptHash: 0xc4,
-      wif: 0xef,
-    }
+  createPsbt = async (
+    paymentPublicKeyString,
+    ordinalsPublicKeyString, 
+    paymentUnspentOutputs, 
+    ordinalsUnspentOutputs,
+    recipient1,
+    recipient2,
+  ) => {
+    const network = btc.NETWORK;
 
     // choose first unspent output
-    const output = unspentOutputs[0]
+    const paymentOutput = paymentUnspentOutputs[0]
+    const ordinalOutput = ordinalsUnspentOutputs[0]
 
-    const publicKey = hex.decode(publicKeyString)
+    const paymentPublicKey = hex.decode(paymentPublicKeyString)
+    const ordinalPublicKey = hex.decode(ordinalsPublicKeyString)
+    
     const tx = new btc.Transaction({
       allowUnknowOutput: true,
     });
 
-    const p2wpkh2 = btc.p2wpkh(publicKey, bitcoinTestnet);
-    const p2sh = btc.p2sh(p2wpkh2, bitcoinTestnet);
+    // create segwit spend
+    const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
+    const p2sh = btc.p2sh(p2wpkh, network);
 
-    const fee = 3000n // set the miner fee amount
-    const recipientAmount = BigInt(output.value) - fee
+    // create taproot spend
+    const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
 
+    // set transfer amount and calculate change
+    const fee = 300n // set the miner fee amount
+    const recipient1Amount = BigInt(Math.min(paymentOutput.value, 3000)) - fee
+    const recipient2Amount = BigInt(Math.min(ordinalOutput.value, 3000))
+    const total = recipient1Amount + recipient2Amount
+    const changeAmount = BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee
+
+    // payment input
     tx.addInput({
-      txid: output.txid,
-      index: output.vout,
+      txid: paymentOutput.txid,
+      index: paymentOutput.vout,
       witnessUtxo: {
         script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-        amount: BigInt(output.value),
+        amount: BigInt(paymentOutput.value),
       },
       redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
       witnessScript: p2sh.witnessScript,
       sighashType: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY
     })
 
-    tx.addOutputAddress(recipient, recipientAmount, bitcoinTestnet)
+    // ordinals input
+    tx.addInput({
+      txid: ordinalOutput.txid,
+      index: ordinalOutput.vout,
+      witnessUtxo: {
+        script: p2tr.script,
+        amount: BigInt(ordinalOutput.value),
+      },
+      tapInternalKey: ordinalPublicKey,
+      sighashType: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY
+    })
+
+    tx.addOutputAddress(recipient1, recipient1Amount, network)
+    tx.addOutputAddress(recipient2, recipient2Amount, network)
+    tx.addOutputAddress(recipient2, changeAmount, network)
 
     tx.addOutput({
       script: btc.Script.encode([
-        'RETURN',
+        'HASH160',
+        'DUP',
         new TextEncoder().encode('SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX')
       ]),
       amount: 0n,
     })
-    console.log("psbt")
+
+    tx.addOutput({
+      script: btc.Script.encode([
+        'RETURN',
+        new TextEncoder().encode('SP1TA24KDEVPSJPC7K6Q41MF5PBYMGRAYGKQH20CN')
+      ]),
+      amount: BigInt(4000),
+    })
+
     const psbt = tx.toPSBT(0)
     const psbtB64 = base64.encode(psbt)
-    console.log(psbtB64)
     return psbtB64
   }
 
   onSignTransactionClick = async () => {
-    const unspentOutputs = await this.getUnspent(this.state.paymentAddress)
+    const paymentUnspentOutputs = await this.getUnspent(this.state.paymentAddress);
+    const ordinalsUnspentOutputs = await this.getUnspent(this.state.ordinalsAddress);
 
-    if (unspentOutputs.length < 1) {
-      alert('No unspent outputs found for address')
+    if (paymentUnspentOutputs.length < 1) {
+      alert('No unspent outputs found for payment address')
     }
+    
+    if (ordinalsUnspentOutputs.length < 1) {
+      alert('No unspent outputs found for ordinals address')
+    }
+
     // create psbt sending from payment address to ordinals address
-    const outputRecipient = this.state.ordinalsAddress;
+    const outputRecipient1 = this.state.ordinalsAddress;
+    const outputRecipient2 = this.state.paymentAddress;
 
     const psbtBase64 = await this.createPsbt(
       this.state.paymentPublicKey, 
-      unspentOutputs, 
-      outputRecipient
+      this.state.ordinalsPublicKey,
+      paymentUnspentOutputs, 
+      ordinalsUnspentOutputs,
+      outputRecipient1,
+      outputRecipient2
     )
 
     const signPsbtOptions = {
       payload: {
         network: {
-          type: "Testnet",
+          type: "Mainnet",
         },
         message: "Sign Transaction",
         psbtBase64: psbtBase64,
@@ -124,6 +167,11 @@ class Dashboard extends React.Component {
             signingIndexes: [0],
             sigHash: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY,
           },
+          {
+            address: this.state.ordinalsAddress,
+            signingIndexes: [1],
+            sigHash: btc.SignatureHash.SINGLE|btc.SignatureHash.ANYONECANPAY,
+          }
         ],
       },
       onFinish: (response) => {
@@ -160,14 +208,14 @@ class Dashboard extends React.Component {
         recipients: [
           {
             address: '2NBC9AJ9ttmn1anzL2HvvVML8NWzCfeXFq4',
-            amountSats: 5700,
+            amountSats: 1500,
           },
           {
             address: '2NFhRJfbBW8dhswyupAJWSehMz6hN5LjHzR',
             amountSats: 1500,
           },
         ],
-        senderAddress: '2NA5znCnmENNXq1BMxgwddFjPVzDYrUZwX5',
+        senderAddress: this.state.paymentAddress,
       },
       onFinish: (response) => {
         alert(response);
@@ -233,4 +281,3 @@ class Dashboard extends React.Component {
 }
 
 export default Dashboard;
-
