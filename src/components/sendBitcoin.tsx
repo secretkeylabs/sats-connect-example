@@ -37,7 +37,7 @@ const SendBitcoin = ({ network, address }: Props) => {
     return (
       <div style={{ background: "lightgray", padding: 30, margin: 10 }}>
         <h3>Send Bitcoin</h3>
-        <div>Only available on testnet</div>;
+        <div>Only available on testnet</div>
       </div>
     );
 
