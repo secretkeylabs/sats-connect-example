@@ -1,5 +1,6 @@
 import { AddressPurpose, BitcoinNetworkType, getAddress } from "sats-connect";
 
+import CreateFileInscription from "./components/createFileInscription";
 import CreateTextInscription from "./components/createTextInscription";
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
@@ -115,6 +116,11 @@ function App() {
         <SendBitcoin address={paymentAddress} network={network} />
 
         <CreateTextInscription
+          network={network}
+          ordinalsAddress={ordinalsAddress}
+        />
+
+        <CreateFileInscription
           network={network}
           ordinalsAddress={ordinalsAddress}
         />

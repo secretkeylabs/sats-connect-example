@@ -1,31 +1,25 @@
 import { useState } from "react";
-import { BitcoinNetworkType, createTextInscription } from "sats-connect";
+import { BitcoinNetworkType, createFileInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
   ordinalsAddress: string;
 };
 
-const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
-  const [content, setContent] = useState<string>(
-    `<html>
-  <body>
-    Hello World!
-  </body>
-</html>
-`
-  );
-  const [contentType, setContentType] = useState<string>("text/html");
+const CreateBinaryInscription = ({ network, ordinalsAddress }: Props) => {
+  const [content, setContent] = useState<string>("");
+  const [contentType, setContentType] = useState<string>("image/jpeg");
+
   const onCreateClick = async () => {
     try {
-      await createTextInscription({
+      await createFileInscription({
         payload: {
           network: {
             type: network,
           },
           recipientAddress: ordinalsAddress,
           contentType,
-          text: content,
+          dataBase64: content,
           /** Optional parameters:
           feeAddress, // the address where the inscription fee should go
           inscriptionFee: 1000 // the amount of sats that should be sent to the fee address
@@ -41,10 +35,29 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
     }
   };
 
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) {
+      setContent("");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const contentString = e.target?.result as string;
+      if (!contentString) {
+        return;
+      }
+
+      const base64String = contentString.split(",")[1];
+      setContent(base64String);
+    };
+    reader.readAsDataURL(selectedFile);
+  };
+
   if (network !== BitcoinNetworkType.Mainnet) {
     return (
       <div className="container">
-        <h3>Create text inscription</h3>
+        <h3>Create file inscription</h3>
         <b>This is only available in Mainnet</b>
       </div>
     );
@@ -52,10 +65,10 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
 
   return (
     <div className="container">
-      <h3>Create text inscription</h3>
+      <h3>Create file inscription</h3>
       <p>
-        Creates an inscription with the desired text and content type. The
-        inscription will be sent to your ordinals address.
+        Creates an inscription from a desired file with specified content type.
+        The inscription will be sent to your ordinals address.
       </p>
       <p>
         A service fee and service fee address can be added to the inscription
@@ -73,10 +86,9 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
         <p>
           <b>Content</b>
           <br />
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-          />
+          {content}
+          <br />
+          <input type="file" onChange={onFileSelect} />
         </p>
         <button onClick={onCreateClick}>Create inscription</button>
       </div>
@@ -84,4 +96,4 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
   );
 };
 
-export default CreateTextInscription;
+export default CreateBinaryInscription;
