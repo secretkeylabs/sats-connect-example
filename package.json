@@ -5,11 +5,9 @@
   "dependencies": {
     "@scure/base": "^1.1.1",
     "@scure/btc-signer": "^1.0.1",
-    "@types/jest": "^29.5.3",
     "@types/node": "^20.4.9",
     "@types/react": "^18.2.20",
     "@types/react-dom": "^18.2.7",
-    "buffer": "^6.0.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
