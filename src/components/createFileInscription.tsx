@@ -3,10 +3,9 @@ import { BitcoinNetworkType, createFileInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
-  ordinalsAddress: string;
 };
 
-const CreateBinaryInscription = ({ network, ordinalsAddress }: Props) => {
+const CreateBinaryInscription = ({ network }: Props) => {
   const [content, setContent] = useState<string>("");
   const [contentType, setContentType] = useState<string>("image/jpeg");
 
@@ -17,7 +16,6 @@ const CreateBinaryInscription = ({ network, ordinalsAddress }: Props) => {
           network: {
             type: network,
           },
-          recipientAddress: ordinalsAddress,
           contentType,
           dataBase64: content,
           /** Optional parameters:

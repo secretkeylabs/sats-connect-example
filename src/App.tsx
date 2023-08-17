@@ -115,15 +115,9 @@ function App() {
 
         <SendBitcoin address={paymentAddress} network={network} />
 
-        <CreateTextInscription
-          network={network}
-          ordinalsAddress={ordinalsAddress}
-        />
+        <CreateTextInscription network={network} />
 
-        <CreateFileInscription
-          network={network}
-          ordinalsAddress={ordinalsAddress}
-        />
+        <CreateFileInscription network={network} />
       </div>
     </div>
   );

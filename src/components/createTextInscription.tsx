@@ -3,10 +3,9 @@ import { BitcoinNetworkType, createTextInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
-  ordinalsAddress: string;
 };
 
-const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
+const CreateTextInscription = ({ network }: Props) => {
   const [content, setContent] = useState<string>(
     `<html>
   <body>
@@ -23,7 +22,6 @@ const CreateTextInscription = ({ network, ordinalsAddress }: Props) => {
           network: {
             type: network,
           },
-          recipientAddress: ordinalsAddress,
           contentType,
           text: content,
           /** Optional parameters:
