@@ -8,40 +8,32 @@ type Props = {
 const CreateTextInscription = ({ network }: Props) => {
   const [content, setContent] = useState<string>(
     `<html>
-    <body style='display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%'>
+    <body
+      style="
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+      "
+    >
       <p>Hello World!</p>
       <p>I am recursive!!</p>
-      <img src='/content/6fb976ab49dcec<html>
-      <body
-        style="
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          height: 100%;
-        "
-      >
-        <p>Hello World!</p>
-        <p>I am recursive!!</p>
-        <img
-          src="/content/6fb976ab49dcec017f1e201e84395983204ae1a7c2abf7ced0a85d692e442799i0"
-        />
-        <div id="content">Fetching current block height...</div>
-        <script>
-          const fetchBlockheight = () =>
-            fetch("/blockheight")
-              .then((response) => response.text())
-              .then((data) => {
-                document.getElementById("content").textContent =
-                  "Current block height: " + data;
-              })
-              .catch(console.error);
-          setTimeout(fetchBlockheight, 2000);
-        </script>
-      </body>
-    </html>
-    017f1e201e84395983204ae1a7c2abf7ced0a85d692e442799i0' />
-      <p>Current block height: <object data='/blockheight' /></p>
+      <img
+        src="/content/6fb976ab49dcec017f1e201e84395983204ae1a7c2abf7ced0a85d692e442799i0"
+      />
+      <div id="content">Fetching current block height...</div>
+      <script>
+        const fetchBlockheight = () =>
+          fetch("/blockheight")
+            .then((response) => response.text())
+            .then((data) => {
+              document.getElementById("content").textContent =
+                "Current block height: " + data;
+            })
+            .catch(console.error);
+        setTimeout(fetchBlockheight, 2000);
+      </script>
     </body>
   </html>
 `
