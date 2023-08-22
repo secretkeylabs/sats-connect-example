@@ -8,10 +8,12 @@ type Props = {
 const CreateTextInscription = ({ network }: Props) => {
   const [content, setContent] = useState<string>(
     `<html>
-  <body>
-    Hello World!
-  </body>
-</html>
+    <body style='display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%'>
+      <p>Hello World!</p>
+      <p>I am recursive!!</p>
+      <img src='/content/6fb976ab49dcec017f1e201e84395983204ae1a7c2abf7ced0a85d692e442799i0' />
+    </body>
+  </html>
 `
   );
   const [contentType, setContentType] = useState<string>("text/html");
