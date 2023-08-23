@@ -6,6 +6,8 @@ type Props = {
 };
 
 const CreateTextInscription = ({ network }: Props) => {
+  const [initialFeeRate, setInitialFeeRate] = useState<number>(8);
+
   const [content, setContent] = useState<string>(
     `<html>
     <body
@@ -49,9 +51,10 @@ const CreateTextInscription = ({ network }: Props) => {
           contentType,
           text: content,
           /** Optional parameters:
-          feeAddress, // the address where the inscription fee should go
-          inscriptionFee: 1000 // the amount of sats that should be sent to the fee address
+          feeAddress: "", // the address where the inscription fee should go
+          inscriptionFee: 1000, // the amount of sats that should be sent to the fee address
           */
+          initialFeeRate,
         },
         onFinish: (response) => {
           alert(response.txId);
@@ -98,6 +101,17 @@ const CreateTextInscription = ({ network }: Props) => {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
+          />
+        </p>
+        <p>
+          <b>Fee rate</b>
+          <br />
+          <input
+            value={initialFeeRate}
+            onChange={(e) => {
+              const newFeeRate = Number(e.target.value);
+              setInitialFeeRate(Number.isNaN(newFeeRate) ? 0 : newFeeRate);
+            }}
           />
         </p>
         <button onClick={onCreateClick}>Create inscription</button>
