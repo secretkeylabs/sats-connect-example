@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BitcoinNetworkType, createFileInscription } from "sats-connect";
+import { BitcoinNetworkType, createInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -11,13 +11,14 @@ const CreateBinaryInscription = ({ network }: Props) => {
 
   const onCreateClick = async () => {
     try {
-      await createFileInscription({
+      await createInscription({
         payload: {
           network: {
             type: network,
           },
           contentType,
-          dataBase64: content,
+          content,
+          payloadType: "BASE_64",
           /** Optional parameters:
           feeAddress, // the address where the inscription fee should go
           inscriptionFee: 1000 // the amount of sats that should be sent to the fee address

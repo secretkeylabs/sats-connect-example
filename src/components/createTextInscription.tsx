@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { BitcoinNetworkType, createTextInscription } from "sats-connect";
+import { BitcoinNetworkType, createInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -43,13 +43,14 @@ const CreateTextInscription = ({ network }: Props) => {
   const [contentType, setContentType] = useState<string>("text/html");
   const onCreateClick = async () => {
     try {
-      await createTextInscription({
+      await createInscription({
         payload: {
           network: {
             type: network,
           },
           contentType,
-          text: content,
+          content,
+          payloadType: "PLAIN_TEXT",
           /** Optional parameters:
           feeAddress: "", // the address where the inscription fee should go
           inscriptionFee: 1000, // the amount of sats that should be sent to the fee address
