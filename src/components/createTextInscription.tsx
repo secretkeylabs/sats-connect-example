@@ -6,7 +6,7 @@ type Props = {
 };
 
 const CreateTextInscription = ({ network }: Props) => {
-  const [initialFeeRate, setInitialFeeRate] = useState<number>(8);
+  const [suggestedMinerFeeRate, setSuggestedMinerFeeRate] = useState<number>(8);
 
   const [content, setContent] = useState<string>(
     `<html>
@@ -55,7 +55,7 @@ const CreateTextInscription = ({ network }: Props) => {
           feeAddress: "", // the address where the inscription fee should go
           inscriptionFee: 1000, // the amount of sats that should be sent to the fee address
           */
-          initialFeeRate,
+          suggestedMinerFeeRate,
         },
         onFinish: (response) => {
           alert(response.txId);
@@ -108,10 +108,12 @@ const CreateTextInscription = ({ network }: Props) => {
           <b>Fee rate</b>
           <br />
           <input
-            value={initialFeeRate}
+            value={suggestedMinerFeeRate}
             onChange={(e) => {
               const newFeeRate = Number(e.target.value);
-              setInitialFeeRate(Number.isNaN(newFeeRate) ? 0 : newFeeRate);
+              setSuggestedMinerFeeRate(
+                Number.isNaN(newFeeRate) ? 0 : newFeeRate
+              );
             }}
           />
         </p>

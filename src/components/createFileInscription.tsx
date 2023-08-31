@@ -20,8 +20,8 @@ const CreateBinaryInscription = ({ network }: Props) => {
           content,
           payloadType: "BASE_64",
           /** Optional parameters:
-          feeAddress, // the address where the inscription fee should go
-          inscriptionFee: 1000 // the amount of sats that should be sent to the fee address
+          appFeeAddress, // the address where the inscription fee should go
+          appFee: 1000 // the amount of sats that should be sent to the fee address
           */
         },
         onFinish: (response) => {
