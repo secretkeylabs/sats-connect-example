@@ -1,11 +1,13 @@
 import { useState } from "react";
+import type { Capability } from "sats-connect";
 import { BitcoinNetworkType, createInscription } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
+  capabilities: Set<Capability>;
 };
 
-const CreateBinaryInscription = ({ network }: Props) => {
+const CreateBinaryInscription = ({ network, capabilities }: Props) => {
   const [content, setContent] = useState<string>("");
   const [contentType, setContentType] = useState<string>("image/jpeg");
 
@@ -58,6 +60,15 @@ const CreateBinaryInscription = ({ network }: Props) => {
       <div className="container">
         <h3>Create file inscription</h3>
         <b>This is only available in Mainnet</b>
+      </div>
+    );
+  }
+
+  if (!capabilities.has("createInscription")) {
+    return (
+      <div className="container">
+        <h3>Create file inscription</h3>
+        <b>The wallet does not support this feature</b>
       </div>
     );
   }

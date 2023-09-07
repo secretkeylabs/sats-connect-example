@@ -1,12 +1,19 @@
-import { AddressPurpose, BitcoinNetworkType, getAddress } from "sats-connect";
+import type { Capability } from "sats-connect";
+import {
+  AddressPurpose,
+  BitcoinNetworkType,
+  getAddress,
+  getCapabilities,
+} from "sats-connect";
 
 import CreateFileInscription from "./components/createFileInscription";
 import CreateTextInscription from "./components/createTextInscription";
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
-import { useLocalStorage } from "./useLocalstorage";
+import { useLocalStorage } from "./useLocalStorage";
 
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -21,6 +28,46 @@ function App() {
     "network",
     BitcoinNetworkType.Testnet
   );
+  const [capabilityState, setCapabilityState] = useState<
+    "loading" | "loaded" | "missing" | "cancelled"
+  >("loading");
+  const [capabilities, setCapabilities] = useState<Set<Capability>>();
+
+  useEffect(() => {
+    const runCapabilityCheck = async () => {
+      let runs = 0;
+      const MAX_RUNS = 5;
+      setCapabilityState("loading");
+
+      // the wallet's in-page script may not be loaded yet, so we'll try a few times
+      while (runs < MAX_RUNS) {
+        try {
+          await getCapabilities({
+            onFinish(response) {
+              setCapabilities(new Set(response));
+              setCapabilityState("loaded");
+            },
+            onCancel() {
+              setCapabilityState("cancelled");
+            },
+            payload: {
+              network: {
+                type: network,
+              },
+            },
+          });
+        } catch (e) {
+          runs++;
+          if (runs === MAX_RUNS) {
+            setCapabilityState("missing");
+          }
+        }
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    };
+
+    runCapabilityCheck();
+  }, [network]);
 
   const isReady =
     !!paymentAddress &&
@@ -70,6 +117,26 @@ function App() {
     });
   };
 
+  const capabilityMessage =
+    capabilityState === "loading"
+      ? "Checking capabilities..."
+      : capabilityState === "cancelled"
+      ? "Capability check cancelled by wallet. Please refresh the page and try again."
+      : capabilityState === "missing"
+      ? "Could not find an installed Sats Connect capable wallet. Please install a wallet and try again."
+      : !capabilities
+      ? "Something went wrong with getting capabilities"
+      : undefined;
+
+  if (capabilityMessage) {
+    return (
+      <div style={{ padding: 30 }}>
+        <h1>Sats Connect Test App - {network}</h1>
+        <div>{capabilityMessage}</div>
+      </div>
+    );
+  }
+
   if (!isReady) {
     return (
       <div style={{ padding: 30 }}>
@@ -109,15 +176,24 @@ function App() {
           ordinalsAddress={ordinalsAddress}
           ordinalsPublicKey={ordinalsPublicKey}
           network={network}
+          capabilities={capabilities!}
         />
 
-        <SignMessage address={ordinalsAddress} network={network} />
+        <SignMessage
+          address={ordinalsAddress}
+          network={network}
+          capabilities={capabilities!}
+        />
 
-        <SendBitcoin address={paymentAddress} network={network} />
+        <SendBitcoin
+          address={paymentAddress}
+          network={network}
+          capabilities={capabilities!}
+        />
 
-        <CreateTextInscription network={network} />
+        <CreateTextInscription network={network} capabilities={capabilities!} />
 
-        <CreateFileInscription network={network} />
+        <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>
     </div>
   );
