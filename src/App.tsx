@@ -36,7 +36,7 @@ function App() {
   useEffect(() => {
     const runCapabilityCheck = async () => {
       let runs = 0;
-      const MAX_RUNS = 5;
+      const MAX_RUNS = 20;
       setCapabilityState("loading");
 
       // the wallet's in-page script may not be loaded yet, so we'll try a few times
@@ -62,7 +62,7 @@ function App() {
             setCapabilityState("missing");
           }
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     };
 
