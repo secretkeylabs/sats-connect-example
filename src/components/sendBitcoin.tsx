@@ -1,13 +1,14 @@
 import { useState } from "react";
-
+import type { Capability } from "sats-connect";
 import { BitcoinNetworkType, sendBtcTransaction } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
   address: string;
+  capabilities: Set<Capability>;
 };
 
-const SendBitcoin = ({ network, address }: Props) => {
+const SendBitcoin = ({ network, address, capabilities }: Props) => {
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState(0n);
 
@@ -40,6 +41,15 @@ const SendBitcoin = ({ network, address }: Props) => {
         <div>Only available on testnet</div>
       </div>
     );
+
+  if (!capabilities.has("sendBtcTransaction")) {
+    return (
+      <div className="container">
+        <h3>Send Bitcoin</h3>
+        <b>The wallet does not support this feature</b>
+      </div>
+    );
+  }
 
   const sendDisabled = recipient.length === 0;
 
