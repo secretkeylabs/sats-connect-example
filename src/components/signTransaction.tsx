@@ -1,8 +1,7 @@
-import { BitcoinNetworkType } from "sats-connect";
+import type { Capability } from "sats-connect";
+import { BitcoinNetworkType, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
-
-import { signTransaction } from "sats-connect";
 
 import { createPSBT, getUTXOs } from "../utils";
 
@@ -12,6 +11,7 @@ type Props = {
   paymentAddress: string;
   paymentPublicKey: string;
   ordinalsPublicKey: string;
+  capabilities: Set<Capability>;
 };
 
 const SignTransaction = ({
@@ -20,6 +20,7 @@ const SignTransaction = ({
   paymentAddress,
   paymentPublicKey,
   ordinalsPublicKey,
+  capabilities,
 }: Props) => {
   const onSignTransactionClick = async () => {
     const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
@@ -84,6 +85,15 @@ const SignTransaction = ({
       onCancel: () => alert("Canceled"),
     });
   };
+
+  if (!capabilities.has("signTransaction")) {
+    return (
+      <div className="container">
+        <h3>Sign transaction</h3>
+        <b>The wallet does not support this feature</b>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
