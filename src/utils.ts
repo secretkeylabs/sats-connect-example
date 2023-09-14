@@ -104,14 +104,6 @@ export const createPSBT = async (
     ]),
     amount: 0n,
   })
-
-  tx.addOutput({
-    script: btc.Script.encode([
-      'RETURN',
-      new TextEncoder().encode('SP1TA24KDEVPSJPC7K6Q41MF5PBYMGRAYGKQH20CN')
-    ]),
-    amount: BigInt(4000),
-  })
   
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);
