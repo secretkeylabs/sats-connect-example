@@ -48,9 +48,8 @@ export const createPSBT = async (
   const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
 
   const tx = new btc.Transaction({
-    allowUnknowOutput: true,
+    allowUnknownOutputs: true,
   });
-
 
   // create segwit spend
   const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
@@ -98,13 +97,13 @@ export const createPSBT = async (
 
   tx.addOutput({
     script: btc.Script.encode([
-      'HASH160',
-      'DUP',
-      new TextEncoder().encode('SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX')
+      "HASH160",
+      "DUP",
+      new TextEncoder().encode("SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX"),
     ]),
     amount: 0n,
-  })
-  
+  });
+
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);
   return psbtB64;
