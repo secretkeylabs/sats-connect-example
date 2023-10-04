@@ -31,40 +31,24 @@ export const getUTXOs = async (
 export const createPSBT = async (
   networkType: BitcoinNetworkType,
   paymentPublicKeyString: string,
-  ordinalsPublicKeyString: string,
-  paymentUnspentOutputs: UTXO[],
-  ordinalsUnspentOutputs: UTXO[],
-  recipient1: string,
-  recipient2: string
+  paymentOutput: UTXO,
+  recipient1: string
 ) => {
   const network =
     networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
 
-  // choose first unspent output
-  const paymentOutput = paymentUnspentOutputs[0];
-  const ordinalOutput = ordinalsUnspentOutputs[0];
-
   const paymentPublicKey = hex.decode(paymentPublicKeyString);
-  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
 
-  const tx = new btc.Transaction({
-    allowUnknownOutputs: true,
-  });
+  const tx = new btc.Transaction();
 
   // create segwit spend
   const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
   const p2sh = btc.p2sh(p2wpkh, network);
 
-  // create taproot spend
-  const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
-
   // set transfer amount and calculate change
   const fee = 300n; // set the miner fee amount
   const recipient1Amount = BigInt(Math.min(paymentOutput.value, 3000)) - fee;
-  const recipient2Amount = BigInt(Math.min(ordinalOutput.value, 3000));
-  const total = recipient1Amount + recipient2Amount;
-  const changeAmount =
-    BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee;
+  const changeAmount = BigInt(paymentOutput.value) - fee;
 
   // payment input
   tx.addInput({
@@ -79,30 +63,8 @@ export const createPSBT = async (
     sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
   });
 
-  // ordinals input
-  tx.addInput({
-    txid: ordinalOutput.txid,
-    index: ordinalOutput.vout,
-    witnessUtxo: {
-      script: p2tr.script,
-      amount: BigInt(ordinalOutput.value),
-    },
-    tapInternalKey: ordinalPublicKey,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  });
-
   tx.addOutputAddress(recipient1, recipient1Amount, network);
-  tx.addOutputAddress(recipient2, recipient2Amount, network);
-  tx.addOutputAddress(recipient2, changeAmount, network);
-
-  tx.addOutput({
-    script: btc.Script.encode([
-      "HASH160",
-      "DUP",
-      new TextEncoder().encode("SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX"),
-    ]),
-    amount: 0n,
-  });
+  tx.addOutputAddress(recipient1, changeAmount, network);
 
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);

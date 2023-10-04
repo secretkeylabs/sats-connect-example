@@ -3,6 +3,7 @@ import { BitcoinNetworkType, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
 
+import { useState } from "react";
 import { createPSBT, getUTXOs } from "../utils";
 
 type Props = {
@@ -19,24 +20,27 @@ const SignTransaction = ({
   ordinalsAddress,
   paymentAddress,
   paymentPublicKey,
-  ordinalsPublicKey,
   capabilities,
 }: Props) => {
+  const [address, setAddress] = useState<string>(
+    "36yfYrSP4nMjLJNgtrbQwDUcw1WexjoexG"
+  );
+  const [txid, setTxid] = useState<string>(
+    "812976ea8c14174a68e9605de40ee6438fb47ae7b43ba2d59af938211b4e194a"
+  );
+  const [vout, setVout] = useState<string>("1");
+
   const onSignTransactionClick = async () => {
-    const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
-      getUTXOs(network, paymentAddress),
-      getUTXOs(network, ordinalsAddress),
-    ]);
+    const paymentUnspentOutputs = await getUTXOs(
+      network,
+      // paymentAddress
+      "36yfYrSP4nMjLJNgtrbQwDUcw1WexjoexG"
+    );
 
     let canContinue = true;
 
     if (paymentUnspentOutputs.length === 0) {
       alert("No unspent outputs found for payment address");
-      canContinue = false;
-    }
-
-    if (ordinalsUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for ordinals address");
       canContinue = false;
     }
 
@@ -46,16 +50,12 @@ const SignTransaction = ({
 
     // create psbt sending from payment address to ordinals address
     const outputRecipient1 = ordinalsAddress;
-    const outputRecipient2 = paymentAddress;
 
     const psbtBase64 = await createPSBT(
       network,
       paymentPublicKey,
-      ordinalsPublicKey,
-      paymentUnspentOutputs,
-      ordinalsUnspentOutputs,
-      outputRecipient1,
-      outputRecipient2
+      paymentUnspentOutputs[0],
+      outputRecipient1
     );
 
     await signTransaction({
@@ -70,11 +70,6 @@ const SignTransaction = ({
           {
             address: paymentAddress,
             signingIndexes: [0],
-            sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-          },
-          {
-            address: ordinalsAddress,
-            signingIndexes: [1],
             sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
           },
         ],
@@ -103,6 +98,22 @@ const SignTransaction = ({
         ordinal addresses to the other address, with the change going to the
         payment address.
       </p>
+      <div>
+        Address:
+        <input value={address} onChange={(e) => setAddress(e.target.value)} />
+      </div>
+      <div>
+        Txid:
+        <input value={txid} onChange={(e) => setTxid(e.target.value)} />
+      </div>
+      <div>
+        VOUT:
+        <input
+          value={vout}
+          onChange={(e) => setVout(e.target.value)}
+          type="number"
+        />
+      </div>
       <div>
         <button onClick={onSignTransactionClick}>Sign Transaction</button>
       </div>
