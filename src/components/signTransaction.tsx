@@ -31,20 +31,14 @@ const SignTransaction = ({
   const [vout, setVout] = useState<string>("1");
 
   const onSignTransactionClick = async () => {
-    const paymentUnspentOutputs = await getUTXOs(
-      network,
-      // paymentAddress
-      "36yfYrSP4nMjLJNgtrbQwDUcw1WexjoexG"
+    const paymentUnspentOutputs = await getUTXOs(network, address);
+
+    const utxo = paymentUnspentOutputs.find(
+      (utxo) => utxo.txid === txid && utxo.vout === parseInt(vout)
     );
 
-    let canContinue = true;
-
-    if (paymentUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for payment address");
-      canContinue = false;
-    }
-
-    if (!canContinue) {
+    if (!utxo) {
+      alert("UTXO not found");
       return;
     }
 
@@ -54,7 +48,7 @@ const SignTransaction = ({
     const psbtBase64 = await createPSBT(
       network,
       paymentPublicKey,
-      paymentUnspentOutputs[0],
+      utxo,
       outputRecipient1
     );
 
