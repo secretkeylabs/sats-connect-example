@@ -3,7 +3,6 @@ import { BitcoinNetworkType, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
 
-import { useState } from "react";
 import { createPSBT, getUTXOs } from "../utils";
 
 type Props = {
@@ -22,19 +21,15 @@ const SignTransaction = ({
   paymentPublicKey,
   capabilities,
 }: Props) => {
-  const [address, setAddress] = useState<string>(
-    "36yfYrSP4nMjLJNgtrbQwDUcw1WexjoexG"
-  );
-  const [txid, setTxid] = useState<string>(
-    "812976ea8c14174a68e9605de40ee6438fb47ae7b43ba2d59af938211b4e194a"
-  );
-  const [vout, setVout] = useState<string>("1");
-
-  const onSignTransactionClick = async () => {
+  const onSignTransactionClick = async (
+    address: string,
+    txid: string,
+    vout: number
+  ) => {
     const paymentUnspentOutputs = await getUTXOs(network, address);
 
     const utxo = paymentUnspentOutputs.find(
-      (utxo) => utxo.txid === txid && utxo.vout === parseInt(vout)
+      (utxo) => utxo.txid === txid && utxo.vout === vout
     );
 
     if (!utxo) {
@@ -93,23 +88,39 @@ const SignTransaction = ({
         payment address.
       </p>
       <div>
-        Address:
-        <input value={address} onChange={(e) => setAddress(e.target.value)} />
-      </div>
-      <div>
-        Txid:
-        <input value={txid} onChange={(e) => setTxid(e.target.value)} />
-      </div>
-      <div>
-        VOUT:
-        <input
-          value={vout}
-          onChange={(e) => setVout(e.target.value)}
-          type="number"
-        />
-      </div>
-      <div>
-        <button onClick={onSignTransactionClick}>Sign Transaction</button>
+        <button
+          onClick={() =>
+            onSignTransactionClick(
+              "36yfYrSP4nMjLJNgtrbQwDUcw1WexjoexG",
+              "812976ea8c14174a68e9605de40ee6438fb47ae7b43ba2d59af938211b4e194a",
+              1
+            )
+          }
+        >
+          Uncommon
+        </button>
+        <button
+          onClick={() =>
+            onSignTransactionClick(
+              "3839RmQBVqdnSwHQfSvPZZvcZTbdUmaf47",
+              "b9a77539594cbf310c454dd89da3f1fbfeca30e25406b237da72e598b7e3e38c",
+              0
+            )
+          }
+        >
+          Rare
+        </button>
+        <button
+          onClick={() =>
+            onSignTransactionClick(
+              "1FC5pgkk2SQx5P9qiuAjL6x29bbZHBRzHN",
+              "817081e1e0574ca5352037769b99cdd826eeebec4d9f79e94d6bdefda4e6776e",
+              0
+            )
+          }
+        >
+          Epic
+        </button>
       </div>
     </div>
   );
