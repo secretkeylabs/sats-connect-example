@@ -69,15 +69,6 @@ const CreateTextInscription = ({ network, capabilities }: Props) => {
     }
   };
 
-  if (network !== BitcoinNetworkType.Mainnet) {
-    return (
-      <div className="container">
-        <h3>Create text inscription</h3>
-        <b>This is only available in Mainnet</b>
-      </div>
-    );
-  }
-
   if (!capabilities.has("createInscription")) {
     return (
       <div className="container">

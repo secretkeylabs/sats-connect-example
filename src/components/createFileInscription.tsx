@@ -55,15 +55,6 @@ const CreateBinaryInscription = ({ network, capabilities }: Props) => {
     reader.readAsDataURL(selectedFile);
   };
 
-  if (network !== BitcoinNetworkType.Mainnet) {
-    return (
-      <div className="container">
-        <h3>Create file inscription</h3>
-        <b>This is only available in Mainnet</b>
-      </div>
-    );
-  }
-
   if (!capabilities.has("createInscription")) {
     return (
       <div className="container">
