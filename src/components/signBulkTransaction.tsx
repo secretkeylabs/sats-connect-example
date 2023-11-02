@@ -132,7 +132,7 @@ const SignBulkTransaction = ({
         ]
       },
       onFinish: (response) => {
-        alert(response);
+        console.log('Bulk tx signing response:', response);
       },
       onCancel: () => alert("Canceled"),
     });
