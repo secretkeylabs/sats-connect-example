@@ -11,6 +11,7 @@ import CreateTextInscription from "./components/createTextInscription";
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
+import TaprootPsbt from "./components/taprootPsbt";
 import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useState } from "react";
@@ -181,6 +182,13 @@ function App() {
 
         <SignMessage
           address={ordinalsAddress}
+          network={network}
+          capabilities={capabilities!}
+        />
+
+        <TaprootPsbt
+          paymentAddress={paymentAddress}
+          paymentPublicKey={paymentPublicKey}
           network={network}
           capabilities={capabilities!}
         />
