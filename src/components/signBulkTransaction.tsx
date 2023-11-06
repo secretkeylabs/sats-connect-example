@@ -80,10 +80,10 @@ const SignBulkTransaction = ({
           type: network,
         },
         message: "Sign Transaction",
+        broadcast: false,
         psbts: [
           {
             psbtBase64: psbtsBase64[0],
-            broadcast: false,
             inputsToSign: [
               {
                 address: paymentAddress,
@@ -99,7 +99,6 @@ const SignBulkTransaction = ({
           },
           {
             psbtBase64: psbtsBase64[1],
-            broadcast: false,
             inputsToSign: [
               {
                 address: paymentAddress,
@@ -115,7 +114,6 @@ const SignBulkTransaction = ({
           },
           {
             psbtBase64: psbtsBase64[2],
-            broadcast: false,
             inputsToSign: [
               {
                 address: paymentAddress,
