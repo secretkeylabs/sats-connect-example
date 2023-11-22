@@ -80,7 +80,6 @@ const SignBulkTransaction = ({
           type: network,
         },
         message: "Sign Transaction",
-        broadcast: false,
         psbts: [
           {
             psbtBase64: psbtsBase64[0],
