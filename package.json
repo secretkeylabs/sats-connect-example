@@ -11,7 +11,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "sats-connect": "^1.1.1-bd7b944",
+    "sats-connect": "^1.1.2-5f6a296",
     "typescript": "^4.9.5"
   },
   "scripts": {
