@@ -121,6 +121,17 @@ const SignTransaction = ({
         >
           Epic
         </button>
+        <button
+          onClick={() =>
+            onSignTransactionClick(
+              "bc1p5dmqqdmxkzfu7xnatft3qgkj9jzf47zxjuwa4ggws0m3vaa6ypmqa5p8h0",
+              "26293afd5599c4ca846afd3c45547315d71950afae94c265057305dae1fd7233",
+              0
+            )
+          }
+        >
+          Inscribed Common/unknown
+        </button>
       </div>
     </div>
   );
