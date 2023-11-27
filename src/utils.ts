@@ -128,7 +128,7 @@ export const createBtcPSBT = async (
   const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
   const p2sh = btc.p2sh(p2wpkh, network);
 
-  const recipientAmount = 500n; // Set the amount to 0.000015 BTC (1500 satoshis)
+  const recipientAmount = 500n;
   const changeAmount = BigInt(paymentOutput.value) - recipientAmount - fee;
 
   tx.addInput({
