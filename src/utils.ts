@@ -39,7 +39,6 @@ export const createPSBT = async (
 ) => {
   const network =
     networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
-
   // choose first unspent output
   const paymentOutput = paymentUnspentOutputs[0];
   const ordinalOutput = ordinalsUnspentOutputs[0];
@@ -94,6 +93,58 @@ export const createPSBT = async (
   tx.addOutputAddress(recipient1, recipient1Amount, network);
   tx.addOutputAddress(recipient2, recipient2Amount, network);
   tx.addOutputAddress(recipient2, changeAmount, network);
+
+  tx.addOutput({
+    script: btc.Script.encode([
+      "HASH160",
+      "DUP",
+      new TextEncoder().encode("SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX"),
+    ]),
+    amount: 0n,
+  });
+
+  const psbt = tx.toPSBT(0);
+  const psbtB64 = base64.encode(psbt);
+  return psbtB64;
+};
+
+export const createBtcPSBT = async (
+  networkType: BitcoinNetworkType,
+  paymentPublicKeyString: string,
+  paymentUnspentOutputs: UTXO[],
+  paymentAddress: string,
+  fee: bigint = 300n,
+) => {
+  const network =
+    networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
+  const paymentOutput = paymentUnspentOutputs[0];
+
+  const paymentPublicKey = hex.decode(paymentPublicKeyString);
+
+  const tx = new btc.Transaction({
+    allowUnknownOutputs: true,
+  });
+
+  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
+  const p2sh = btc.p2sh(p2wpkh, network);
+
+  const recipientAmount = 500n; // Set the amount to 0.000015 BTC (1500 satoshis)
+  const changeAmount = BigInt(paymentOutput.value) - recipientAmount - fee;
+
+  tx.addInput({
+    txid: paymentOutput.txid,
+    index: paymentOutput.vout,
+    witnessUtxo: {
+      script: p2sh.script ? p2sh.script : Buffer.alloc(0),
+      amount: BigInt(paymentOutput.value),
+    },
+    redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
+    witnessScript: p2sh.witnessScript,
+    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+  });
+
+  tx.addOutputAddress(paymentAddress, recipientAmount, network);
+  tx.addOutputAddress(paymentAddress, changeAmount, network);
 
   tx.addOutput({
     script: btc.Script.encode([

@@ -16,6 +16,7 @@ import { useLocalStorage } from "./useLocalStorage";
 import { useEffect, useState } from "react";
 import "./App.css";
 import SignBulkTransaction from "./components/signBulkTransaction";
+import SignCustomBulkTransaction from "./components/signCustomBulkTransaction";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -185,6 +186,13 @@ function App() {
           paymentPublicKey={paymentPublicKey}
           ordinalsAddress={ordinalsAddress}
           ordinalsPublicKey={ordinalsPublicKey}
+          network={network}
+          capabilities={capabilities!}
+        />
+
+        <SignCustomBulkTransaction
+          paymentAddress={paymentAddress}
+          paymentPublicKey={paymentPublicKey}
           network={network}
           capabilities={capabilities!}
         />
