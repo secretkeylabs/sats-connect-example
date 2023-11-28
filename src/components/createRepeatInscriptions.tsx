@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Capability, CreateInscriptionResponse } from "sats-connect";
+import type { Capability, CreateRepeatInscriptionsResponse } from "sats-connect";
 import { BitcoinNetworkType, createRepeatInscriptions } from "sats-connect";
 
 type Props = {
@@ -32,7 +32,7 @@ const CreateRepeatInscriptions = ({ network, capabilities }: Props) => {
           */
           suggestedMinerFeeRate,
         },
-        onFinish: (response: CreateInscriptionResponse) => {
+        onFinish: (response: CreateRepeatInscriptionsResponse) => {
           alert(response.txId);
         },
         onCancel: () => alert("Canceled"),
