@@ -13,7 +13,7 @@ const CreateRepeatInscriptions = ({ network, capabilities }: Props) => {
   const [content, setContent] = useState<string>(
     '{"p":"brc-20","op":"mint","tick":"doge","amt":"4200"}'
   );
-  const [contentType, setContentType] = useState<string>("text/json");
+  const [contentType, setContentType] = useState<string>("application/json");
   const [repeat, setRepeat] = useState<string>("12");
   const onCreateClick = async () => {
     try {
