@@ -46,7 +46,7 @@ const CreateRepeatInscriptions = ({ network, capabilities }: Props) => {
     return (
       <div className="container">
         <h3>Create repeat inscriptions</h3>
-        <b>The wallet does not support this feature</b>
+        <b>The wallet does not support this feature. Please update your wallet</b>
       </div>
     );
   }
