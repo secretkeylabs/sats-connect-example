@@ -15,6 +15,7 @@ import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useState } from "react";
 import "./App.css";
+import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -192,6 +193,8 @@ function App() {
         />
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
+
+        <CreateRepeatInscriptions network={network} capabilities={capabilities!} />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>
