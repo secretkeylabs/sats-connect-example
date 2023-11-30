@@ -49,7 +49,7 @@ const SignBulkTransaction = ({
       alert("Not enough unspent outputs found for ordinals address");
       canContinue = false;
     }
-
+                                        
     if (!canContinue) {
       return;
     }
