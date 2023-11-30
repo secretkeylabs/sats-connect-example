@@ -15,6 +15,7 @@ import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useState } from "react";
 import "./App.css";
+import SignBulkTransaction from "./components/signBulkTransaction";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -171,6 +172,15 @@ function App() {
         </div>
 
         <SignTransaction
+          paymentAddress={paymentAddress}
+          paymentPublicKey={paymentPublicKey}
+          ordinalsAddress={ordinalsAddress}
+          ordinalsPublicKey={ordinalsPublicKey}
+          network={network}
+          capabilities={capabilities!}
+        />
+
+        <SignBulkTransaction
           paymentAddress={paymentAddress}
           paymentPublicKey={paymentPublicKey}
           ordinalsAddress={ordinalsAddress}
