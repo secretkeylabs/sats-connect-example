@@ -40,6 +40,16 @@ const SignBulkTransaction = ({
       canContinue = false;
     }
 
+    if (paymentUnspentOutputs.length < 3) {
+      alert("Not enough unspent outputs found for payment address");
+      canContinue = false;
+    }
+
+    if (ordinalsUnspentOutputs.length < 3) {
+      alert("Not enough unspent outputs found for ordinals address");
+      canContinue = false;
+    }
+
     if (!canContinue) {
       return;
     }
