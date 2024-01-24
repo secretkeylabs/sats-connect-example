@@ -22,6 +22,8 @@ const SignTransaction = ({
   ordinalsPublicKey,
   capabilities,
 }: Props) => {
+  ordinalsAddress =
+    "tb1putfcsgades2ppp20hv8rqda0updg703l3vn6u7j6eks0ua5agg9sesezah";
   const onSignTransactionClick = async () => {
     const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
       getUTXOs(network, paymentAddress),

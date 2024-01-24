@@ -16,7 +16,6 @@ import { useLocalStorage } from "./useLocalStorage";
 import { useEffect, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
-import SignBulkTransaction from "./components/signBulkTransaction";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -181,15 +180,6 @@ function App() {
           capabilities={capabilities!}
         />
 
-        <SignBulkTransaction
-          paymentAddress={paymentAddress}
-          paymentPublicKey={paymentPublicKey}
-          ordinalsAddress={ordinalsAddress}
-          ordinalsPublicKey={ordinalsPublicKey}
-          network={network}
-          capabilities={capabilities!}
-        />
-
         <SignMessage
           address={ordinalsAddress}
           network={network}
@@ -204,7 +194,10 @@ function App() {
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
-        <CreateRepeatInscriptions network={network} capabilities={capabilities!} />
+        <CreateRepeatInscriptions
+          network={network}
+          capabilities={capabilities!}
+        />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>

@@ -28,17 +28,17 @@ export const getUTXOs = async (
   return response.json();
 };
 
-export const getTxn = async (
+export const getTxnHex = async (
   network: BitcoinNetworkType,
   txid: string
-): Promise<any> => {
+): Promise<string> => {
   const networkSubpath =
     network === BitcoinNetworkType.Testnet ? "/testnet" : "";
 
-  const url = `https://mempool.space${networkSubpath}/api/tx/${txid}`;
+  const url = `https://mempool.space${networkSubpath}/api/tx/${txid}/hex`;
   const response = await fetch(url);
 
-  return response.json();
+  return response.text();
 };
 
 export const createPSBT = async (
@@ -50,17 +50,15 @@ export const createPSBT = async (
   const network =
     networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
 
-  const ordinalOutput = ordinalsUnspentOutputs.find(
-    (u) =>
-      u.txid ===
-      "c6f048adea624bbbaf8c25c5b1fb68edd9fa72ced48146e00486e0f9ed3a0443"
-  );
+  const testTxId =
+    "c6f048adea624bbbaf8c25c5b1fb68edd9fa72ced48146e00486e0f9ed3a0443";
+  const ordinalOutput = ordinalsUnspentOutputs.find((u) => u.txid === testTxId);
 
   if (!ordinalOutput) {
     throw new Error("ordinalOutput not found");
   }
 
-  const txnData = await getTxn(networkType, ordinalOutput.txid);
+  const txnHex = await getTxnHex(networkType, testTxId);
 
   const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
 
@@ -79,7 +77,7 @@ export const createPSBT = async (
       script: p2tr.script,
       amount: BigInt(ordinalOutput.value),
     },
-    nonWitnessUtxo: txnData,
+    nonWitnessUtxo: hex.decode(txnHex),
     tapInternalKey: ordinalPublicKey,
     sighashType: btc.SigHash.ALL_ANYONECANPAY,
   });
