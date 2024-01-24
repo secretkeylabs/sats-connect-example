@@ -28,56 +28,48 @@ export const getUTXOs = async (
   return response.json();
 };
 
+export const getTxn = async (
+  network: BitcoinNetworkType,
+  txid: string
+): Promise<any> => {
+  const networkSubpath =
+    network === BitcoinNetworkType.Testnet ? "/testnet" : "";
+
+  const url = `https://mempool.space${networkSubpath}/api/tx/${txid}`;
+  const response = await fetch(url);
+
+  return response.json();
+};
+
 export const createPSBT = async (
   networkType: BitcoinNetworkType,
-  paymentPublicKeyString: string,
   ordinalsPublicKeyString: string,
-  paymentUnspentOutputs: UTXO[],
   ordinalsUnspentOutputs: UTXO[],
-  recipient1: string,
-  recipient2: string
+  recipient: string
 ) => {
   const network =
     networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
 
-  // choose first unspent output
-  const paymentOutput = paymentUnspentOutputs[0];
-  const ordinalOutput = ordinalsUnspentOutputs[0];
+  const ordinalOutput = ordinalsUnspentOutputs.find(
+    (u) =>
+      u.txid ===
+      "c6f048adea624bbbaf8c25c5b1fb68edd9fa72ced48146e00486e0f9ed3a0443"
+  );
 
-  const paymentPublicKey = hex.decode(paymentPublicKeyString);
+  if (!ordinalOutput) {
+    throw new Error("ordinalOutput not found");
+  }
+
+  const txnData = await getTxn(networkType, ordinalOutput.txid);
+
   const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
-
-  const tx = new btc.Transaction({
-    allowUnknownOutputs: true,
-  });
-
-  // create segwit spend
-  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
-  const p2sh = btc.p2sh(p2wpkh, network);
 
   // create taproot spend
   const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
 
-  // set transfer amount and calculate change
-  const fee = 300n; // set the miner fee amount
-  const recipient1Amount = BigInt(Math.min(paymentOutput.value, 3000)) - fee;
-  const recipient2Amount = BigInt(Math.min(ordinalOutput.value, 3000));
-  const total = recipient1Amount + recipient2Amount;
-  const changeAmount =
-    BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee;
+  const tx = new btc.Transaction();
 
-  // payment input
-  tx.addInput({
-    txid: paymentOutput.txid,
-    index: paymentOutput.vout,
-    witnessUtxo: {
-      script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-      amount: BigInt(paymentOutput.value),
-    },
-    redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
-    witnessScript: p2sh.witnessScript,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  });
+  const recipientAmount = 9750n;
 
   // ordinals input
   tx.addInput({
@@ -87,22 +79,12 @@ export const createPSBT = async (
       script: p2tr.script,
       amount: BigInt(ordinalOutput.value),
     },
+    nonWitnessUtxo: txnData,
     tapInternalKey: ordinalPublicKey,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+    sighashType: btc.SigHash.ALL_ANYONECANPAY,
   });
 
-  tx.addOutputAddress(recipient1, recipient1Amount, network);
-  tx.addOutputAddress(recipient2, recipient2Amount, network);
-  tx.addOutputAddress(recipient2, changeAmount, network);
-
-  tx.addOutput({
-    script: btc.Script.encode([
-      "HASH160",
-      "DUP",
-      new TextEncoder().encode("SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX"),
-    ]),
-    amount: 0n,
-  });
+  tx.addOutputAddress(recipient, recipientAmount, network);
 
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);

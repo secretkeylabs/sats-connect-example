@@ -45,17 +45,12 @@ const SignTransaction = ({
     }
 
     // create psbt sending from payment address to ordinals address
-    const outputRecipient1 = ordinalsAddress;
-    const outputRecipient2 = paymentAddress;
 
     const psbtBase64 = await createPSBT(
       network,
-      paymentPublicKey,
       ordinalsPublicKey,
-      paymentUnspentOutputs,
       ordinalsUnspentOutputs,
-      outputRecipient1,
-      outputRecipient2
+      paymentAddress
     );
 
     await signTransaction({
@@ -68,14 +63,9 @@ const SignTransaction = ({
         broadcast: false,
         inputsToSign: [
           {
-            address: paymentAddress,
-            signingIndexes: [0],
-            sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-          },
-          {
             address: ordinalsAddress,
-            signingIndexes: [1],
-            sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+            signingIndexes: [0],
+            sigHash: btc.SigHash.ALL_ANYONECANPAY,
           },
         ],
       },
