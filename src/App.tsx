@@ -96,7 +96,7 @@ function App() {
   const onConnectClick = async () => {
     await getAddress({
       payload: {
-        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
+        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
         message: "SATS Connect Demo",
         network: {
           type: network,
