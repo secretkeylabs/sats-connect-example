@@ -96,7 +96,11 @@ function App() {
   const onConnectClick = async () => {
     await getAddress({
       payload: {
-        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
+        purposes: [
+          AddressPurpose.Ordinals,
+          AddressPurpose.Payment,
+          AddressPurpose.Stacks,
+        ],
         message: "SATS Connect Demo",
         network: {
           type: network,
@@ -191,6 +195,12 @@ function App() {
         />
 
         <SignMessage
+          address={paymentAddress}
+          network={network}
+          capabilities={capabilities!}
+        />
+
+        <SignMessage
           address={ordinalsAddress}
           network={network}
           capabilities={capabilities!}
@@ -204,7 +214,10 @@ function App() {
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
-        <CreateRepeatInscriptions network={network} capabilities={capabilities!} />
+        <CreateRepeatInscriptions
+          network={network}
+          capabilities={capabilities!}
+        />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>
