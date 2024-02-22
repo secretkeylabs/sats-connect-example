@@ -4,6 +4,8 @@ import {
   BitcoinNetworkType,
   getAddress,
   getCapabilities,
+  getProviders,
+  request,
 } from "sats-connect";
 
 import CreateFileInscription from "./components/createFileInscription";
@@ -13,7 +15,7 @@ import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
 import { useLocalStorage } from "./useLocalStorage";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
@@ -34,6 +36,7 @@ function App() {
     "loading" | "loaded" | "missing" | "cancelled"
   >("loading");
   const [capabilities, setCapabilities] = useState<Set<Capability>>();
+  const providers = useMemo(() => getProviders(), [])
 
   useEffect(() => {
     const runCapabilityCheck = async () => {
@@ -84,6 +87,16 @@ function App() {
     setOrdinalsPublicKey(undefined);
   };
 
+  const requestWalletData = async () => {
+   request("getAddresses", {})
+      .then((resp: any) => {
+        console.log({ sucesss: resp });
+      })
+      .catch((error: any) => {
+        console.log({ error });
+      });
+  };
+
   const toggleNetwork = () => {
     setNetwork(
       network === BitcoinNetworkType.Testnet
@@ -96,7 +109,11 @@ function App() {
   const onConnectClick = async () => {
     await getAddress({
       payload: {
-        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
+        purposes: [
+          AddressPurpose.Ordinals,
+          AddressPurpose.Payment,
+          AddressPurpose.Stacks,
+        ],
         message: "SATS Connect Demo",
         network: {
           type: network,
@@ -144,7 +161,10 @@ function App() {
       <div style={{ padding: 30 }}>
         <h1>Sats Connect Test App - {network}</h1>
         <div>Please connect your wallet to continue</div>
-
+        <h2>Available Wallets</h2>
+        <div>{providers ? providers.map((provider) => (
+          <p style={{color: 'blue'}} key={provider.id}>{provider.name}</p>
+        )) : null}</div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
             Switch Network
@@ -171,7 +191,10 @@ function App() {
           <h3>Disconnect wallet</h3>
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
-
+        <div className="container">
+          <h3>RPC Request</h3>
+          <button onClick={requestWalletData}>Request</button>
+        </div>
         <SignTransaction
           paymentAddress={paymentAddress}
           paymentPublicKey={paymentPublicKey}
@@ -204,7 +227,10 @@ function App() {
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
-        <CreateRepeatInscriptions network={network} capabilities={capabilities!} />
+        <CreateRepeatInscriptions
+          network={network}
+          capabilities={capabilities!}
+        />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>
