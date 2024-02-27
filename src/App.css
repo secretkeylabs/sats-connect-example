@@ -8,3 +8,23 @@ button {
   padding: 30px;
   margin: 10px;
 }
+
+.provider {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  border-width: 0;
+  cursor: pointer;
+}
+
+.providerImg {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.providerName {
+  color: blue;
+  font-size: 16px;
+}

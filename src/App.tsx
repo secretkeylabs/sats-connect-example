@@ -87,14 +87,9 @@ function App() {
     setOrdinalsPublicKey(undefined);
   };
 
-  const requestWalletData = async () => {
-   request("getAddresses", {})
-      .then((resp: any) => {
-        console.log({ sucesss: resp });
-      })
-      .catch((error: any) => {
-        console.log({ error });
-      });
+  const handleGetInfo = async () => {
+    const response = await request('getInfo', null);
+    console.log(response);
   };
 
   const toggleNetwork = () => {
@@ -136,6 +131,29 @@ function App() {
     });
   };
 
+
+  const onConnectRPCClick = async () => {
+    const response = await request('getAddresses', {
+      purposes: [
+        AddressPurpose.Ordinals,
+        AddressPurpose.Payment,
+        AddressPurpose.Stacks,
+      ],
+      message: "SATS Connect Demo"
+    });
+    const paymentAddressItem = response.addresses.find(
+      (address) => address.purpose === AddressPurpose.Payment
+    );
+    setPaymentAddress(paymentAddressItem?.address);
+    setPaymentPublicKey(paymentAddressItem?.publicKey);
+
+    const ordinalsAddressItem = response.addresses.find(
+      (address) => address.purpose === AddressPurpose.Ordinals
+    );
+    setOrdinalsAddress(ordinalsAddressItem?.address);
+    setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+  };
+
   const capabilityMessage =
     capabilityState === "loading"
       ? "Checking capabilities..."
@@ -163,7 +181,10 @@ function App() {
         <div>Please connect your wallet to continue</div>
         <h2>Available Wallets</h2>
         <div>{providers ? providers.map((provider) => (
-          <p style={{color: 'blue'}} key={provider.id}>{provider.name}</p>
+          <button className="provider" onClick={() => window.open(provider.chromeWebStoreUrl)}>
+          <img className="providerImg" src={provider.icon}/>
+          <p className="providerName" key={provider.id}>{provider.name}</p>
+          </button>
         )) : null}</div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
@@ -173,6 +194,9 @@ function App() {
           <br />
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
+          </button>
+          <button style={{ height: 30, width: 180 }} onClick={onConnectRPCClick}>
+            Connect RPC
           </button>
         </div>
       </div>
@@ -192,8 +216,8 @@ function App() {
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
         <div className="container">
-          <h3>RPC Request</h3>
-          <button onClick={requestWalletData}>Request</button>
+          <h3>Get Wallet Info</h3>
+          <button onClick={handleGetInfo}>Request Info</button>
         </div>
         <SignTransaction
           paymentAddress={paymentAddress}
