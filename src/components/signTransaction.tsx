@@ -1,5 +1,5 @@
 import type { Capability } from "sats-connect";
-import { BitcoinNetworkType, signTransaction } from "sats-connect";
+import { BitcoinNetworkType, request, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
 
@@ -95,6 +95,57 @@ const SignTransaction = ({
     );
   }
 
+  const onSignTransactionRPC = async () => {
+    const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
+      getUTXOs(network, paymentAddress),
+      getUTXOs(network, ordinalsAddress),
+    ]);
+
+    let canContinue = true;
+
+    if (paymentUnspentOutputs.length === 0) {
+      alert("No unspent outputs found for payment address");
+      canContinue = false;
+    }
+
+    if (ordinalsUnspentOutputs.length === 0) {
+      alert("No unspent outputs found for ordinals address");
+      canContinue = false;
+    }
+
+    if (!canContinue) {
+      return;
+    }
+
+    // create psbt sending from payment address to ordinals address
+    const outputRecipient1 = ordinalsAddress;
+    const outputRecipient2 = paymentAddress;
+
+    const psbtBase64 = await createPSBT(
+      network,
+      paymentPublicKey,
+      ordinalsPublicKey,
+      paymentUnspentOutputs,
+      ordinalsUnspentOutputs,
+      outputRecipient1,
+      outputRecipient2
+    );
+    try {
+      const response = await request('signPsbt', {
+        psbt: psbtBase64,
+        allowedSignHash: btc.SigHash.SINGLE | btc.SigHash.DEFAULT_ANYONECANPAY,
+        signInputs: {
+          [paymentAddress]: [0],
+          [ordinalsAddress]: [1],
+        },
+      });
+      alert(response.result.psbt);
+    } catch (err) {
+      alert(err.error.message)
+    }
+
+  }
+
   return (
     <div className="container">
       <h3>Sign transaction</h3>
@@ -105,6 +156,7 @@ const SignTransaction = ({
       </p>
       <div>
         <button onClick={onSignTransactionClick}>Sign Transaction</button>
+        <button onClick={onSignTransactionRPC}>Sign Transaction RPC</button>
       </div>
     </div>
   );

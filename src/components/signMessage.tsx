@@ -1,5 +1,6 @@
+import { RpcErrorCode, request } from "sats-connect";
 import { useState } from "react";
-import type { Capability } from "sats-connect";
+import type { Capability, RpcErrorResponse } from "sats-connect";
 import { BitcoinNetworkType, signMessage } from "sats-connect";
 
 type Props = {
@@ -27,6 +28,22 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
       },
       onCancel: () => alert("Canceled"),
     });
+  };
+
+  const onSignMessageRpcClick = async () => {
+    try {
+      const response = await request("signMessage", {
+        address,
+        message,
+      });
+      alert(response.result.signature);
+    } catch (err) {
+      if (
+        (err as RpcErrorResponse).error.code === RpcErrorCode.USER_REJECTION
+      ) {
+        alert(err.error.message);
+      }
+    }
   };
 
   if (!capabilities.has("signMessage")) {
@@ -60,6 +77,9 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
       <div>
         <button onClick={onSignMessageClick} disabled={signingDisabled}>
           Sign message
+        </button>
+        <button onClick={onSignMessageRpcClick} disabled={signingDisabled}>
+          Sign message RPC
         </button>
       </div>
     </div>

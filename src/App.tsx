@@ -36,7 +36,7 @@ function App() {
     "loading" | "loaded" | "missing" | "cancelled"
   >("loading");
   const [capabilities, setCapabilities] = useState<Set<Capability>>();
-  const providers = useMemo(() => getProviders(), [])
+  const providers = useMemo(() => getProviders(), []);
 
   useEffect(() => {
     const runCapabilityCheck = async () => {
@@ -88,8 +88,12 @@ function App() {
   };
 
   const handleGetInfo = async () => {
-    const response = await request('getInfo', null);
-    console.log(response);
+    try {
+      const response = await request("getInfo", null);
+      console.log(response);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const toggleNetwork = () => {
@@ -131,27 +135,31 @@ function App() {
     });
   };
 
-
   const onConnectRPCClick = async () => {
-    const response = await request('getAddresses', {
-      purposes: [
-        AddressPurpose.Ordinals,
-        AddressPurpose.Payment,
-        AddressPurpose.Stacks,
-      ],
-      message: "SATS Connect Demo"
-    });
-    const paymentAddressItem = response.addresses.find(
-      (address) => address.purpose === AddressPurpose.Payment
-    );
-    setPaymentAddress(paymentAddressItem?.address);
-    setPaymentPublicKey(paymentAddressItem?.publicKey);
+    try {
+      const response = await request("getAddresses", {
+        purposes: [
+          AddressPurpose.Ordinals,
+          AddressPurpose.Payment,
+        ],
+        message: "SATS Connect Demo",
+      });
+      const paymentAddressItem = response.result.addresses.find(
+        (address: { purpose: AddressPurpose }) =>
+          address.purpose === AddressPurpose.Payment
+      );
+      setPaymentAddress(paymentAddressItem?.address);
+      setPaymentPublicKey(paymentAddressItem?.publicKey);
 
-    const ordinalsAddressItem = response.addresses.find(
-      (address) => address.purpose === AddressPurpose.Ordinals
-    );
-    setOrdinalsAddress(ordinalsAddressItem?.address);
-    setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+      const ordinalsAddressItem = response.result.addresses.find(
+        (address: { purpose: AddressPurpose }) =>
+          address.purpose === AddressPurpose.Ordinals
+      );
+      setOrdinalsAddress(ordinalsAddressItem?.address);
+      setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+    } catch (err) {
+      alert(err.error.message)
+    }
   };
 
   const capabilityMessage =
@@ -180,12 +188,20 @@ function App() {
         <h1>Sats Connect Test App - {network}</h1>
         <div>Please connect your wallet to continue</div>
         <h2>Available Wallets</h2>
-        <div>{providers ? providers.map((provider) => (
-          <button className="provider" onClick={() => window.open(provider.chromeWebStoreUrl)}>
-          <img className="providerImg" src={provider.icon}/>
-          <p className="providerName" key={provider.id}>{provider.name}</p>
-          </button>
-        )) : null}</div>
+        <div>
+          {providers
+            ? providers.map((provider) => (
+                <button
+                  key={provider.id}
+                  className="provider"
+                  onClick={() => window.open(provider.chromeWebStoreUrl)}
+                >
+                  <img className="providerImg" src={provider.icon} />
+                  <p className="providerName">{provider.name}</p>
+                </button>
+              ))
+            : null}
+        </div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
             Switch Network
@@ -195,7 +211,10 @@ function App() {
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
           </button>
-          <button style={{ height: 30, width: 180 }} onClick={onConnectRPCClick}>
+          <button
+            style={{ height: 30, width: 180 }}
+            onClick={onConnectRPCClick}
+          >
             Connect RPC
           </button>
         </div>

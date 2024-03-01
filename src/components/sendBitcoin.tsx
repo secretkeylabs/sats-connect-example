@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Capability } from "sats-connect";
-import { BitcoinNetworkType, sendBtcTransaction } from "sats-connect";
+import { BitcoinNetworkType, request, sendBtcTransaction } from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -32,6 +32,22 @@ const SendBitcoin = ({ network, address, capabilities }: Props) => {
       },
       onCancel: () => alert("Canceled"),
     });
+  };
+
+  const onSendBtcRpc = async () => {
+    try {
+      const response = await request('sendTransfer', {
+        recipients: [
+          {
+            address: recipient,
+            amount: Number(amount),
+          }
+        ]
+      })
+      alert(response.result.txid);
+    } catch(err) {
+      alert(err.error.message)
+    }
   };
 
   if (network !== BitcoinNetworkType.Testnet)
@@ -80,6 +96,9 @@ const SendBitcoin = ({ network, address, capabilities }: Props) => {
       </p>
       <button onClick={onSendBtcClick} disabled={sendDisabled}>
         Send BTC Transaction
+      </button>
+      <button onClick={onSendBtcRpc} disabled={sendDisabled}>
+        Send BTC RPC
       </button>
     </div>
   );
