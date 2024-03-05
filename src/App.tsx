@@ -26,6 +26,7 @@ import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
 import CallContract from "./components/stacks/callContract";
+import TransferSTX from "./components/transferStx";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -88,13 +89,15 @@ function App() {
     !!paymentAddress &&
     !!paymentPublicKey &&
     !!ordinalsAddress &&
-    !!ordinalsPublicKey;
+    !!ordinalsPublicKey &&
+    !!stacksAddress;
 
   const onWalletDisconnect = () => {
     setPaymentAddress(undefined);
     setPaymentPublicKey(undefined);
     setOrdinalsAddress(undefined);
     setOrdinalsPublicKey(undefined);
+    setStacksAddress(undefined);
   };
 
   const handleGetInfo = async () => {
@@ -141,7 +144,6 @@ function App() {
         setOrdinalsAddress(ordinalsAddressItem?.address);
         setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
 
-        // For Stacks
         const stacksAddressItem = response.addresses.find(
           (address) => address.purpose === AddressPurpose.Stacks
         );
@@ -305,6 +307,8 @@ function App() {
       <div>
         <p>Stacks address: {stacksAddress}</p>
         <br />
+
+        <TransferSTX address={stacksAddress} network={network} />
 
         {/* <StxSignTransaction publicKey={stacksPublicKey || ""} /> */}
 
