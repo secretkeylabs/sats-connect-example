@@ -15,12 +15,17 @@ import CreateTextInscription from "./components/createTextInscription";
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
+
+// Stacks
+import StxSignTransaction from "./components/stacks/signTransaction";
+
 import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
+import CallContract from "./components/stacks/callContract";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -30,6 +35,9 @@ function App() {
     useLocalStorage("ordinalsAddress");
   const [ordinalsPublicKey, setOrdinalsPublicKey] =
     useLocalStorage("ordinalsPublicKey");
+  const [stacksAddress, setStacksAddress] = useLocalStorage("stacksAddress");
+  const [stacksPublicKey, setStacksPublicKey] =
+    useLocalStorage("stacksPublicKey");
   const [network, setNetwork] = useLocalStorage<BitcoinNetworkType>(
     "network",
     BitcoinNetworkType.Testnet
@@ -132,6 +140,13 @@ function App() {
         );
         setOrdinalsAddress(ordinalsAddressItem?.address);
         setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+
+        // For Stacks
+        const stacksAddressItem = response.addresses.find(
+          (address) => address.purpose === AddressPurpose.Stacks
+        );
+        setStacksAddress(stacksAddressItem?.address);
+        setStacksPublicKey(stacksAddressItem?.publicKey);
       },
       onCancel: () => alert("Request canceled"),
     });
@@ -140,10 +155,7 @@ function App() {
   const onConnectRPCClick = async () => {
     try {
       const response = await request("getAddresses", {
-        purposes: [
-          AddressPurpose.Ordinals,
-          AddressPurpose.Payment,
-        ],
+        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
         message: "SATS Connect Demo",
       });
       if (isRpcSuccessResponse(response)) {
@@ -153,7 +165,7 @@ function App() {
         );
         setPaymentAddress(paymentAddressItem?.address);
         setPaymentPublicKey(paymentAddressItem?.publicKey);
-  
+
         const ordinalsAddressItem = response.result.addresses.find(
           (address: { purpose: AddressPurpose }) =>
             address.purpose === AddressPurpose.Ordinals
@@ -169,7 +181,7 @@ function App() {
         }
       }
     } catch (err) {
-      console.log(err)
+      console.log(err);
     }
   };
 
@@ -287,6 +299,16 @@ function App() {
         />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
+      </div>
+
+      <h2>Stacks</h2>
+      <div>
+        <p>Stacks address: {stacksAddress}</p>
+        <br />
+
+        {/* <StxSignTransaction publicKey={stacksPublicKey || ""} /> */}
+
+        <CallContract />
       </div>
     </div>
   );
