@@ -2,9 +2,11 @@ import type { Capability } from "sats-connect";
 import {
   AddressPurpose,
   BitcoinNetworkType,
+  RpcErrorCode,
   getAddress,
   getCapabilities,
   getProviders,
+  isRpcSuccessResponse,
   request,
 } from "sats-connect";
 
@@ -144,21 +146,30 @@ function App() {
         ],
         message: "SATS Connect Demo",
       });
-      const paymentAddressItem = response.result.addresses.find(
-        (address: { purpose: AddressPurpose }) =>
-          address.purpose === AddressPurpose.Payment
-      );
-      setPaymentAddress(paymentAddressItem?.address);
-      setPaymentPublicKey(paymentAddressItem?.publicKey);
-
-      const ordinalsAddressItem = response.result.addresses.find(
-        (address: { purpose: AddressPurpose }) =>
-          address.purpose === AddressPurpose.Ordinals
-      );
-      setOrdinalsAddress(ordinalsAddressItem?.address);
-      setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+      if (isRpcSuccessResponse(response)) {
+        const paymentAddressItem = response.result.addresses.find(
+          (address: { purpose: AddressPurpose }) =>
+            address.purpose === AddressPurpose.Payment
+        );
+        setPaymentAddress(paymentAddressItem?.address);
+        setPaymentPublicKey(paymentAddressItem?.publicKey);
+  
+        const ordinalsAddressItem = response.result.addresses.find(
+          (address: { purpose: AddressPurpose }) =>
+            address.purpose === AddressPurpose.Ordinals
+        );
+        setOrdinalsAddress(ordinalsAddressItem?.address);
+        setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+      } else {
+        const error = response;
+        if (error.error.code === RpcErrorCode.USER_REJECTION) {
+          alert("Canceled");
+        } else {
+          alert(error.error.message);
+        }
+      }
     } catch (err) {
-      alert(err.error.message)
+      console.log(err)
     }
   };
 

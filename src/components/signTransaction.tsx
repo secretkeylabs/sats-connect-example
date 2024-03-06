@@ -1,5 +1,5 @@
 import type { Capability } from "sats-connect";
-import { BitcoinNetworkType, request, signTransaction } from "sats-connect";
+import { BitcoinNetworkType, RpcErrorCode, isRpcSuccessResponse, request, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
 
@@ -139,9 +139,20 @@ const SignTransaction = ({
           [ordinalsAddress]: [1],
         },
       });
-      alert(response.result.psbt);
+      if (isRpcSuccessResponse(response)) {
+        console.log(response);
+        alert(response.result.psbt);
+      } else {
+        const error = response;
+        console.log(error);
+        if (error.error.code === RpcErrorCode.USER_REJECTION) {
+          alert("Canceled");
+        } else {
+          alert(error.error.message);
+        }
+      }
     } catch (err) {
-      alert(err.error.message)
+      console.log(err);
     }
 
   }
