@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BitcoinNetworkType, request } from "sats-connect";
+import { useLocalStorage } from "src/useLocalStorage";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -7,20 +8,32 @@ type Props = {
 };
 
 const TransferSTX = ({ network, address }: Props) => {
-  const [recipient, setRecipient] = useState("");
-  const [amount, setAmount] = useState("");
-  const [memo, setMemo] = useState("");
+  const [recipient, setRecipient] = useLocalStorage<string>(
+    "stx_transferSTx-recipient",
+    ""
+  );
+  const [amount, setAmount] = useLocalStorage<string>(
+    "stx_transferSTx-amount",
+    ""
+  );
+  const [memo, setMemo] = useLocalStorage<string>("stx_transferSTx-memo", "");
 
   const onTransferSTX = async () => {
     try {
+      console.log("[ARY]: transfer");
       const response = await request("stx_transferStx", {
         recipient,
         amount: Number(amount),
         memo,
       });
-      alert(response.result.txid);
-    } catch (err) {
-      alert(err.error.message);
+      if ("result" in response) {
+        alert(response.result.txid);
+      } else {
+        alert(response.error.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert(error.message);
     }
   };
 
