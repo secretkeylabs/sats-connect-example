@@ -1,4 +1,4 @@
-import { request } from "sats-connect";
+import { isRpcSuccessResponse, request } from "sats-connect";
 import {
   contractPrincipalCV,
   makeUnsignedContractCall,
@@ -39,7 +39,11 @@ function SignTransaction(props: Props) {
       const response = await request("stx_signTransaction", {
         transaction: uint8ArrayToHex(transaction.serialize()),
       });
-      alert(response.result.transaction);
+      if (isRpcSuccessResponse(response)) {
+        console.log(response.result.transaction);
+      } else {
+        console.error(response.error);
+      }
     } catch (error) {
       alert(error);
     }

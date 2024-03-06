@@ -1,4 +1,4 @@
-import { request } from "sats-connect";
+import { isRpcSuccessResponse, request } from "sats-connect";
 
 import { useState } from "react";
 import { useLocalStorage } from "src/useLocalStorage";
@@ -30,8 +30,11 @@ function CallContract() {
         functionName,
         arguments: JSON.parse(functionArgs),
       });
-      alert(response.result.transaction);
-      console.log(response);
+      if (isRpcSuccessResponse(response)) {
+        console.log(response.result);
+      } else {
+        console.error(response.error);
+      }
     } catch (error) {
       console.error(error);
       alert(error);
