@@ -236,12 +236,6 @@ function App() {
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
           </button>
-          <button
-            style={{ height: 30, width: 180 }}
-            onClick={onConnectRPCClick}
-          >
-            Connect RPC
-          </button>
         </div>
       </div>
     );
