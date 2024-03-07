@@ -304,7 +304,10 @@ function App() {
 
         <TransferSTX address={stacksAddress} network={network} />
 
-        {/* <StxSignTransaction publicKey={stacksPublicKey || ""} /> */}
+        <StxSignTransaction
+          network={network}
+          publicKey={stacksPublicKey || ""}
+        />
 
         <CallContract network={network} />
       </div>
