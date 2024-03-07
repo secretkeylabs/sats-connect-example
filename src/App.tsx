@@ -306,7 +306,7 @@ function App() {
 
         {/* <StxSignTransaction publicKey={stacksPublicKey || ""} /> */}
 
-        <CallContract />
+        <CallContract network={network} />
       </div>
     </div>
   );

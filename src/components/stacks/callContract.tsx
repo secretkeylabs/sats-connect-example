@@ -1,26 +1,50 @@
-import { isRpcSuccessResponse, request } from "sats-connect";
+import {
+  BitcoinNetworkType,
+  isRpcSuccessResponse,
+  request,
+} from "sats-connect";
 
 import { useState } from "react";
 import { useLocalStorage } from "src/useLocalStorage";
 
-function CallContract() {
-  const [contractAddress, setContractAddress] = useState(
-    "SP21YTSM60CAY6D011EZVEVNKXVW8FVZE198XEFFP"
-  );
-  const [contractName, setContractName] = useLocalStorage<string>(
-    "stx_callContract-contract-name",
-    "pox-fast-pool-v2"
-  );
-  const [functionName, setFunctionName] = useLocalStorage<string>(
-    "stx_callContract-function-name",
-    "allow-contract-caller"
-  );
-  const [functionArgs, setFunctionArgs] = useLocalStorage<string>(
-    "stx_callContract-arguments",
-    `[
+const inputDefaults = {
+  [BitcoinNetworkType.Mainnet]: {
+    contractAddress: "SP21YTSM60CAY6D011EZVEVNKXVW8FVZE198XEFFP",
+    contractName: "pox-fast-pool-v2",
+    functionName: "allow-contract-caller",
+    functionArgs: `[
   "061683ed66860315e334010bbfb76eb3eef887efee0a10706f782d666173742d706f6f6c2d7632",
   "09"
-]`
+]`,
+  },
+  [BitcoinNetworkType.Testnet]: {
+    contractAddress: "ST000000000000000000002AMW42H",
+    contractName: "pox-3",
+    functionName: "stack-increase",
+    functionArgs: `["0100000000000000000000000000000001"]`,
+  },
+};
+
+type Props = {
+  network: BitcoinNetworkType;
+};
+
+function CallContract({ network }: Props) {
+  const [contractAddress, setContractAddress] = useLocalStorage<string>(
+    `${network}-stx_callContract-contract-address`,
+    inputDefaults[network].contractAddress
+  );
+  const [contractName, setContractName] = useLocalStorage<string>(
+    `${network}-stx_callContract-contract-name`,
+    inputDefaults[network].contractName
+  );
+  const [functionName, setFunctionName] = useLocalStorage<string>(
+    `${network}-stx_callContract-function-name`,
+    inputDefaults[network].functionName
+  );
+  const [functionArgs, setFunctionArgs] = useLocalStorage<string>(
+    `${network}-stx_callContract-arguments`,
+    inputDefaults[network].functionArgs
   );
 
   const handleWebBtcCallContractClick = async () => {
