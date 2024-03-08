@@ -1,13 +1,11 @@
-import { useState } from "react";
-import { BitcoinNetworkType, request } from "sats-connect";
+import { request } from "sats-connect";
 import { useLocalStorage } from "src/useLocalStorage";
 
 type Props = {
-  network: BitcoinNetworkType;
   address: string;
 };
 
-const TransferSTX = ({ network, address }: Props) => {
+const TransferSTX = ({ address }: Props) => {
   const [recipient, setRecipient] = useLocalStorage<string>(
     "stx_transferSTx-recipient",
     ""

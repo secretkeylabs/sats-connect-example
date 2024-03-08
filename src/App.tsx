@@ -17,6 +17,10 @@ import SignTransaction from "./components/signTransaction";
 
 // Stacks
 import StxSignTransaction from "./components/stacks/signTransaction";
+import StxCallContract from "./components/stacks/callContract";
+import StxGetAccounts from "./components/stacks/getAccounts";
+import StxTransferStx from "./components/stacks/transferStx";
+import StxSignMessage from "./components/stacks/signMessage";
 
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -24,9 +28,6 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
-import CallContract from "./components/stacks/callContract";
-import StacksSignMessage from "./components/stacks/signMessage";
-import TransferSTX from "./components/transferStx";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -302,15 +303,18 @@ function App() {
         <p>Stacks address: {stacksAddress}</p>
         <br />
 
-        <TransferSTX address={stacksAddress} network={network} />
+        <StxGetAccounts />
+
+        <StxTransferStx address={stacksAddress} />
 
         <StxSignTransaction
           network={network}
           publicKey={stacksPublicKey || ""}
         />
 
-        <CallContract network={network} />
-        <StacksSignMessage />
+        <StxCallContract network={network} />
+
+        <StxSignMessage />
       </div>
     </div>
   );
