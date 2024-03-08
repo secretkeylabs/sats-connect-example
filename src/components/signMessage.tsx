@@ -1,6 +1,9 @@
 import { useState } from "react";
 import type { Capability } from "sats-connect";
 import { BitcoinNetworkType, signMessage } from "sats-connect";
+import {
+  Verifier
+} from 'bip322-js';
 
 type Props = {
   network: BitcoinNetworkType;
@@ -24,6 +27,8 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
       },
       onFinish: (response) => {
         alert(response);
+        const isValid = Verifier.verifySignature(address, message, response)
+        alert(`signature: ${isValid ? 'valid' : 'in-valid'}`);
       },
       onCancel: () => alert("Canceled"),
     });
