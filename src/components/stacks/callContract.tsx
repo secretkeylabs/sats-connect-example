@@ -1,10 +1,5 @@
-import {
-  BitcoinNetworkType,
-  isRpcSuccessResponse,
-  request,
-} from "sats-connect";
+import { BitcoinNetworkType, request } from "sats-connect";
 
-import { useState } from "react";
 import { useLocalStorage } from "src/useLocalStorage";
 
 const inputDefaults = {
@@ -54,7 +49,7 @@ function CallContract({ network }: Props) {
         functionName,
         arguments: JSON.parse(functionArgs),
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response.result);
       } else {
         console.error(response.error);

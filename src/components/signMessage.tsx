@@ -1,8 +1,11 @@
-import { RpcErrorCode, isRpcSuccessResponse, request } from "sats-connect";
 import { useState } from "react";
-import type { Capability, Requests, RpcErrorResponse, RpcSuccessResponse } from "sats-connect";
-import { BitcoinNetworkType, signMessage } from "sats-connect";
-import { RpcResponse } from "sats-connect";
+import type { Capability } from "sats-connect";
+import {
+  BitcoinNetworkType,
+  RpcErrorCode,
+  request,
+  signMessage,
+} from "sats-connect";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -37,22 +40,21 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
         address,
         message,
       });
-      if(isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response);
         alert(response.result.signature);
       } else {
         const error = response;
         console.log(error);
-        if(error.error.code === RpcErrorCode.USER_REJECTION) {
+        if (error.error.code === RpcErrorCode.USER_REJECTION) {
           alert("Canceled");
         } else {
           alert(error.error.message);
+        }
       }
-    }
     } catch (err) {
-      alert('Something Wen Wrong');
+      alert("Something Wen Wrong");
     }
-
   };
 
   if (!capabilities.has("signMessage")) {

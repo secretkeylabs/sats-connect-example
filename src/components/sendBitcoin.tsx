@@ -3,7 +3,6 @@ import type { Capability } from "sats-connect";
 import {
   BitcoinNetworkType,
   RpcErrorCode,
-  isRpcSuccessResponse,
   request,
   sendBtcTransaction,
 } from "sats-connect";
@@ -50,7 +49,7 @@ const SendBitcoin = ({ network, address, capabilities }: Props) => {
           },
         ],
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response);
         alert(response.result.txid);
       } else {

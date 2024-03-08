@@ -6,7 +6,6 @@ import {
   getAddress,
   getCapabilities,
   getProviders,
-  isRpcSuccessResponse,
   request,
 } from "sats-connect";
 
@@ -26,8 +25,8 @@ import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
 import CallContract from "./components/stacks/callContract";
-import TransferSTX from "./components/transferStx";
 import StacksSignMessage from "./components/stacks/signMessage";
+import TransferSTX from "./components/transferStx";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -161,7 +160,7 @@ function App() {
         purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
         message: "SATS Connect Demo",
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         const paymentAddressItem = response.result.addresses.find(
           (address: { purpose: AddressPurpose }) =>
             address.purpose === AddressPurpose.Payment

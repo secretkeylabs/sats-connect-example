@@ -1,5 +1,10 @@
 import type { Capability } from "sats-connect";
-import { BitcoinNetworkType, RpcErrorCode, isRpcSuccessResponse, request, signTransaction } from "sats-connect";
+import {
+  BitcoinNetworkType,
+  RpcErrorCode,
+  request,
+  signTransaction,
+} from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
 
@@ -131,7 +136,7 @@ const SignTransaction = ({
       outputRecipient2
     );
     try {
-      const response = await request('signPsbt', {
+      const response = await request("signPsbt", {
         psbt: psbtBase64,
         allowedSignHash: btc.SigHash.SINGLE | btc.SigHash.DEFAULT_ANYONECANPAY,
         signInputs: {
@@ -139,7 +144,7 @@ const SignTransaction = ({
           [ordinalsAddress]: [1],
         },
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response);
         alert(response.result.psbt);
       } else {
@@ -154,8 +159,7 @@ const SignTransaction = ({
     } catch (err) {
       console.log(err);
     }
-
-  }
+  };
 
   return (
     <div className="container">

@@ -1,17 +1,12 @@
 import {
-  BitcoinNetworkType,
-  isRpcSuccessResponse,
-  request,
-} from "sats-connect";
-import {
   makeUnsignedContractCall,
   makeUnsignedContractDeploy,
   makeUnsignedSTXTokenTransfer,
   uintCV,
 } from "@stacks/transactions";
-import { useState } from "react";
-import { uint8ArrayToHex } from "./helpers";
+import { BitcoinNetworkType, request } from "sats-connect";
 import { code } from "./contractCode";
+import { uint8ArrayToHex } from "./helpers";
 
 interface Props {
   network: BitcoinNetworkType;
@@ -34,7 +29,7 @@ function SignTransaction(props: Props) {
       const response = await request("stx_signTransaction", {
         transaction: uint8ArrayToHex(transaction.serialize()),
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response.result.transaction);
       } else {
         alert(errorMessage);
@@ -58,7 +53,7 @@ function SignTransaction(props: Props) {
       const response = await request("stx_signTransaction", {
         transaction: uint8ArrayToHex(transaction.serialize()),
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response.result.transaction);
       } else {
         alert(errorMessage);
@@ -82,7 +77,7 @@ function SignTransaction(props: Props) {
       const response = await request("stx_signTransaction", {
         transaction: uint8ArrayToHex(transaction.serialize()),
       });
-      if (isRpcSuccessResponse(response)) {
+      if (response.status === "success") {
         console.log(response.result.transaction);
       } else {
         alert(errorMessage);
