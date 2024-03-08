@@ -23,8 +23,9 @@ const TransferSTX = ({ address }: Props) => {
         amount: Number(amount),
         memo,
       });
-      if ("result" in response) {
-        alert(response.result.txid);
+      if (response.status === "success") {
+        alert("Success! Check console for result.");
+        console.log(response.result);
       } else {
         alert(response.error.message);
       }
