@@ -27,6 +27,7 @@ import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
 import CallContract from "./components/stacks/callContract";
 import TransferSTX from "./components/transferStx";
+import StacksSignMessage from "./components/stacks/signMessage";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -310,6 +311,7 @@ function App() {
         />
 
         <CallContract network={network} />
+        <StacksSignMessage />
       </div>
     </div>
   );
