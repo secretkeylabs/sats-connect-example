@@ -18,7 +18,6 @@ const TransferSTX = ({ address }: Props) => {
 
   const onTransferSTX = async () => {
     try {
-      console.log("[ARY]: transfer");
       const response = await request("stx_transferStx", {
         recipient,
         amount: Number(amount),
