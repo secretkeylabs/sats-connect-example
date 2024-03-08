@@ -21,6 +21,7 @@ import StxCallContract from "./components/stacks/callContract";
 import StxGetAccounts from "./components/stacks/getAccounts";
 import StxTransferStx from "./components/stacks/transferStx";
 import StxSignMessage from "./components/stacks/signMessage";
+import StxGetAddresses from "./components/stacks/getAddresses";
 
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -304,6 +305,8 @@ function App() {
         <br />
 
         <StxGetAccounts />
+
+        <StxGetAddresses />
 
         <StxTransferStx address={stacksAddress} />
 
