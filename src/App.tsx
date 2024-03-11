@@ -2,7 +2,6 @@ import type { Capability } from "sats-connect";
 import {
   AddressPurpose,
   BitcoinNetworkType,
-  RpcErrorCode,
   getAddress,
   getCapabilities,
   getProviders,
@@ -154,39 +153,6 @@ function App() {
       },
       onCancel: () => alert("Request canceled"),
     });
-  };
-
-  const onConnectRPCClick = async () => {
-    try {
-      const response = await request("getAddresses", {
-        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
-        message: "SATS Connect Demo",
-      });
-      if (response.status === "success") {
-        const paymentAddressItem = response.result.addresses.find(
-          (address: { purpose: AddressPurpose }) =>
-            address.purpose === AddressPurpose.Payment
-        );
-        setPaymentAddress(paymentAddressItem?.address);
-        setPaymentPublicKey(paymentAddressItem?.publicKey);
-
-        const ordinalsAddressItem = response.result.addresses.find(
-          (address: { purpose: AddressPurpose }) =>
-            address.purpose === AddressPurpose.Ordinals
-        );
-        setOrdinalsAddress(ordinalsAddressItem?.address);
-        setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
-      } else {
-        const error = response;
-        if (error.error.code === RpcErrorCode.USER_REJECTION) {
-          alert("Canceled");
-        } else {
-          alert(error.error.message);
-        }
-      }
-    } catch (err) {
-      console.log(err);
-    }
   };
 
   const capabilityMessage =
