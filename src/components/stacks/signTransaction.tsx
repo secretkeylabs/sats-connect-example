@@ -30,9 +30,10 @@ function SignTransaction(props: Props) {
         transaction: uint8ArrayToHex(transaction.serialize()),
       });
       if (response.status === "success") {
+        alert("Success! Check console for result.");
         console.log(response.result.transaction);
       } else {
-        alert(errorMessage);
+        alert("Error signing transaction. Check console for error logs");
         console.error(response.error);
       }
     } catch (error) {
