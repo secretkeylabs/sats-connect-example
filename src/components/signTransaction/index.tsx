@@ -1,9 +1,13 @@
 import type { Capability } from "sats-connect";
-import { BitcoinNetworkType, signTransaction } from "sats-connect";
+import {
+  BitcoinNetworkType,
+  RpcErrorCode,
+  request,
+  signTransaction,
+} from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
-
-import { createPSBT, getUTXOs } from "../utils";
+import { createTransaction } from "./utils";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -23,40 +27,19 @@ const SignTransaction = ({
   capabilities,
 }: Props) => {
   const onSignTransactionClick = async () => {
-    const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
-      getUTXOs(network, paymentAddress),
-      getUTXOs(network, ordinalsAddress),
-    ]);
-
-    let canContinue = true;
-
-    if (paymentUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for payment address");
-      canContinue = false;
-    }
-
-    if (ordinalsUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for ordinals address");
-      canContinue = false;
-    }
-
-    if (!canContinue) {
-      return;
-    }
-
-    // create psbt sending from payment address to ordinals address
-    const outputRecipient1 = ordinalsAddress;
-    const outputRecipient2 = paymentAddress;
-
-    const psbtBase64 = await createPSBT(
+    const [error, psbtBase64] = await createTransaction({
       network,
+      paymentAddress,
+      ordinalsAddress,
       paymentPublicKey,
       ordinalsPublicKey,
-      paymentUnspentOutputs,
-      ordinalsUnspentOutputs,
-      outputRecipient1,
-      outputRecipient2
-    );
+    });
+
+    if (error) {
+      alert("Error creating transaction. Check console for error logs");
+      console.error(error);
+      return;
+    }
 
     await signTransaction({
       payload: {
@@ -95,6 +78,47 @@ const SignTransaction = ({
     );
   }
 
+  const onSignTransactionRPC = async () => {
+    const [error, psbtBase64] = await createTransaction({
+      network,
+      paymentAddress,
+      ordinalsAddress,
+      paymentPublicKey,
+      ordinalsPublicKey,
+    });
+
+    if (error) {
+      alert("Error creating transaction. Check console for error logs");
+      console.error(error);
+      return;
+    }
+
+    try {
+      const response = await request("signPsbt", {
+        psbt: psbtBase64,
+        allowedSignHash: btc.SigHash.SINGLE | btc.SigHash.DEFAULT_ANYONECANPAY,
+        signInputs: {
+          [paymentAddress]: [0],
+          [ordinalsAddress]: [1],
+        },
+      });
+      if (response.status === "success") {
+        console.log(response);
+        alert(response.result.psbt);
+      } else {
+        const error = response;
+        console.log(error);
+        if (error.error.code === RpcErrorCode.USER_REJECTION) {
+          alert("Canceled");
+        } else {
+          alert(error.error.message);
+        }
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
     <div className="container">
       <h3>Sign transaction</h3>
@@ -105,6 +129,7 @@ const SignTransaction = ({
       </p>
       <div>
         <button onClick={onSignTransactionClick}>Sign Transaction</button>
+        <button onClick={onSignTransactionRPC}>Sign Transaction RPC</button>
       </div>
     </div>
   );

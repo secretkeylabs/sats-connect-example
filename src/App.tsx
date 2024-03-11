@@ -4,6 +4,8 @@ import {
   BitcoinNetworkType,
   getAddress,
   getCapabilities,
+  getProviders,
+  request,
 } from "sats-connect";
 
 import CreateFileInscription from "./components/createFileInscription";
@@ -11,9 +13,19 @@ import CreateTextInscription from "./components/createTextInscription";
 import SendBitcoin from "./components/sendBitcoin";
 import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
+
+// Stacks
+import StxSignTransaction from "./components/stacks/signTransaction";
+import StxCallContract from "./components/stacks/callContract";
+import StxGetAccounts from "./components/stacks/getAccounts";
+import StxTransferStx from "./components/stacks/transferStx";
+import StxSignMessage from "./components/stacks/signMessage";
+import StxGetAddresses from "./components/stacks/getAddresses";
+import StxDeployContract from "./components/stacks/deployContract";
+
 import { useLocalStorage } from "./useLocalStorage";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
@@ -26,6 +38,9 @@ function App() {
     useLocalStorage("ordinalsAddress");
   const [ordinalsPublicKey, setOrdinalsPublicKey] =
     useLocalStorage("ordinalsPublicKey");
+  const [stacksAddress, setStacksAddress] = useLocalStorage("stacksAddress");
+  const [stacksPublicKey, setStacksPublicKey] =
+    useLocalStorage("stacksPublicKey");
   const [network, setNetwork] = useLocalStorage<BitcoinNetworkType>(
     "network",
     BitcoinNetworkType.Testnet
@@ -34,6 +49,7 @@ function App() {
     "loading" | "loaded" | "missing" | "cancelled"
   >("loading");
   const [capabilities, setCapabilities] = useState<Set<Capability>>();
+  const providers = useMemo(() => getProviders(), []);
 
   useEffect(() => {
     const runCapabilityCheck = async () => {
@@ -75,13 +91,31 @@ function App() {
     !!paymentAddress &&
     !!paymentPublicKey &&
     !!ordinalsAddress &&
-    !!ordinalsPublicKey;
+    !!ordinalsPublicKey &&
+    !!stacksAddress;
 
   const onWalletDisconnect = () => {
     setPaymentAddress(undefined);
     setPaymentPublicKey(undefined);
     setOrdinalsAddress(undefined);
     setOrdinalsPublicKey(undefined);
+    setStacksAddress(undefined);
+  };
+
+  const handleGetInfo = async () => {
+    try {
+      const response = await request("getInfo", null);
+
+      if (response.status === "success") {
+        alert("Success. Check console for response");
+        console.log(response.result);
+      } else {
+        alert("Error getting info. Check console for error logs");
+        console.error(response.error);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const toggleNetwork = () => {
@@ -96,7 +130,11 @@ function App() {
   const onConnectClick = async () => {
     await getAddress({
       payload: {
-        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
+        purposes: [
+          AddressPurpose.Ordinals,
+          AddressPurpose.Payment,
+          AddressPurpose.Stacks,
+        ],
         message: "SATS Connect Demo",
         network: {
           type: network,
@@ -114,6 +152,12 @@ function App() {
         );
         setOrdinalsAddress(ordinalsAddressItem?.address);
         setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+
+        const stacksAddressItem = response.addresses.find(
+          (address) => address.purpose === AddressPurpose.Stacks
+        );
+        setStacksAddress(stacksAddressItem?.address);
+        setStacksPublicKey(stacksAddressItem?.publicKey);
       },
       onCancel: () => alert("Request canceled"),
     });
@@ -144,7 +188,21 @@ function App() {
       <div style={{ padding: 30 }}>
         <h1>Sats Connect Test App - {network}</h1>
         <div>Please connect your wallet to continue</div>
-
+        <h2>Available Wallets</h2>
+        <div>
+          {providers
+            ? providers.map((provider) => (
+                <button
+                  key={provider.id}
+                  className="provider"
+                  onClick={() => window.open(provider.chromeWebStoreUrl)}
+                >
+                  <img className="providerImg" src={provider.icon} />
+                  <p className="providerName">{provider.name}</p>
+                </button>
+              ))
+            : null}
+        </div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
             Switch Network
@@ -171,7 +229,10 @@ function App() {
           <h3>Disconnect wallet</h3>
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
-
+        <div className="container">
+          <h3>Get Wallet Info</h3>
+          <button onClick={handleGetInfo}>Request Info</button>
+        </div>
         <SignTransaction
           paymentAddress={paymentAddress}
           paymentPublicKey={paymentPublicKey}
@@ -204,9 +265,35 @@ function App() {
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
-        <CreateRepeatInscriptions network={network} capabilities={capabilities!} />
+        <CreateRepeatInscriptions
+          network={network}
+          capabilities={capabilities!}
+        />
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
+      </div>
+
+      <h2>Stacks</h2>
+      <div>
+        <p>Stacks address: {stacksAddress}</p>
+        <br />
+
+        <StxGetAccounts />
+
+        <StxGetAddresses />
+
+        <StxTransferStx address={stacksAddress} />
+
+        <StxSignTransaction
+          network={network}
+          publicKey={stacksPublicKey || ""}
+        />
+
+        <StxCallContract network={network} />
+
+        <StxSignMessage />
+
+        <StxDeployContract network={network} />
       </div>
     </div>
   );
