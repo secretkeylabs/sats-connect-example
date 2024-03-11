@@ -8,8 +8,6 @@ import {
 
 import * as btc from "@scure/btc-signer";
 
-import { createPSBT, getUTXOs } from "../utils";
-
 type Props = {
   network: BitcoinNetworkType;
   ordinalsAddress: string;
@@ -28,40 +26,19 @@ const SignTransaction = ({
   capabilities,
 }: Props) => {
   const onSignTransactionClick = async () => {
-    const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
-      getUTXOs(network, paymentAddress),
-      getUTXOs(network, ordinalsAddress),
-    ]);
-
-    let canContinue = true;
-
-    if (paymentUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for payment address");
-      canContinue = false;
-    }
-
-    if (ordinalsUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for ordinals address");
-      canContinue = false;
-    }
-
-    if (!canContinue) {
-      return;
-    }
-
-    // create psbt sending from payment address to ordinals address
-    const outputRecipient1 = ordinalsAddress;
-    const outputRecipient2 = paymentAddress;
-
-    const psbtBase64 = await createPSBT(
+    const [error, psbtBase64] = await createTransaction({
       network,
+      paymentAddress,
+      ordinalsAddress,
       paymentPublicKey,
       ordinalsPublicKey,
-      paymentUnspentOutputs,
-      ordinalsUnspentOutputs,
-      outputRecipient1,
-      outputRecipient2
-    );
+    });
+
+    if (error) {
+      alert("Error creating transaction. Check console for error logs");
+      console.error(error);
+      return;
+    }
 
     await signTransaction({
       payload: {
@@ -101,40 +78,20 @@ const SignTransaction = ({
   }
 
   const onSignTransactionRPC = async () => {
-    const [paymentUnspentOutputs, ordinalsUnspentOutputs] = await Promise.all([
-      getUTXOs(network, paymentAddress),
-      getUTXOs(network, ordinalsAddress),
-    ]);
+    const [error, psbtBase64] = await createTransaction({
+      network,
+      paymentAddress,
+      ordinalsAddress,
+      paymentPublicKey,
+      ordinalsPublicKey,
+    });
 
-    let canContinue = true;
-
-    if (paymentUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for payment address");
-      canContinue = false;
-    }
-
-    if (ordinalsUnspentOutputs.length === 0) {
-      alert("No unspent outputs found for ordinals address");
-      canContinue = false;
-    }
-
-    if (!canContinue) {
+    if (error) {
+      alert("Error creating transaction. Check console for error logs");
+      console.error(error);
       return;
     }
 
-    // create psbt sending from payment address to ordinals address
-    const outputRecipient1 = ordinalsAddress;
-    const outputRecipient2 = paymentAddress;
-
-    const psbtBase64 = await createPSBT(
-      network,
-      paymentPublicKey,
-      ordinalsPublicKey,
-      paymentUnspentOutputs,
-      ordinalsUnspentOutputs,
-      outputRecipient1,
-      outputRecipient2
-    );
     try {
       const response = await request("signPsbt", {
         psbt: psbtBase64,
@@ -178,3 +135,12 @@ const SignTransaction = ({
 };
 
 export default SignTransaction;
+function createTransaction(arg0: {
+  network: BitcoinNetworkType;
+  paymentAddress: string;
+  ordinalsAddress: string;
+  paymentPublicKey: string;
+  ordinalsPublicKey: string;
+}): [any, any] | PromiseLike<[any, any]> {
+  throw new Error("Function not implemented.");
+}
