@@ -7,6 +7,7 @@ import {
 } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
+import { createTransaction } from "./utils";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -135,12 +136,3 @@ const SignTransaction = ({
 };
 
 export default SignTransaction;
-function createTransaction(arg0: {
-  network: BitcoinNetworkType;
-  paymentAddress: string;
-  ordinalsAddress: string;
-  paymentPublicKey: string;
-  ordinalsPublicKey: string;
-}): [any, any] | PromiseLike<[any, any]> {
-  throw new Error("Function not implemented.");
-}
