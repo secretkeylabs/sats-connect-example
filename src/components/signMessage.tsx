@@ -53,7 +53,7 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
         }
       }
     } catch (err) {
-      alert("Something Wen Wrong");
+      alert("Something went wrong");
     }
   };
 
