@@ -50,8 +50,10 @@ function CallContract({ network }: Props) {
         arguments: JSON.parse(functionArgs),
       });
       if (response.status === "success") {
+        alert("Success! Check console for result.");
         console.log(response.result);
       } else {
+        alert("Error calling contract. Check console for error logs");
         console.error(response.error);
       }
     } catch (error) {
