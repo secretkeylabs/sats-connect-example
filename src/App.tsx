@@ -104,7 +104,14 @@ function App() {
   const handleGetInfo = async () => {
     try {
       const response = await request("getInfo", null);
-      console.log(response);
+
+      if (response.status === "success") {
+        alert("Success. Check console for response");
+        console.log(response.result);
+      } else {
+        alert("Error getting info. Check console for error logs");
+        console.error(response.error);
+      }
     } catch (err) {
       console.log(err);
     }
