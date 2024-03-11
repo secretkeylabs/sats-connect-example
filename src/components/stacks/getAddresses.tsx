@@ -2,7 +2,7 @@ import { request } from "sats-connect";
 
 function GetAddresses() {
   async function handleGetAddressesClick() {
-    const response = await request("stx_getAddresses", {});
+    const response = await request("stx_getAddresses", null);
 
     if (response.status === "success") {
       alert("Success getting addresses. Check console for results.");

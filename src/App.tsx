@@ -21,6 +21,7 @@ import StxGetAccounts from "./components/stacks/getAccounts";
 import StxTransferStx from "./components/stacks/transferStx";
 import StxSignMessage from "./components/stacks/signMessage";
 import StxGetAddresses from "./components/stacks/getAddresses";
+import StxDeployContract from "./components/stacks/deployContract";
 
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -291,6 +292,8 @@ function App() {
         <StxCallContract network={network} />
 
         <StxSignMessage />
+
+        <StxDeployContract network={network} />
       </div>
     </div>
   );
