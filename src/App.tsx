@@ -291,7 +291,7 @@ function App() {
 
         <StxCallContract network={network} />
 
-        <StxSignMessage />
+        <StxSignMessage network={network} />
 
         <StxDeployContract network={network} />
       </div>
