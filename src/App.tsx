@@ -20,6 +20,7 @@ import StxCallContract from "./components/stacks/callContract";
 import StxGetAccounts from "./components/stacks/getAccounts";
 import StxTransferStx from "./components/stacks/transferStx";
 import StxSignMessage from "./components/stacks/signMessage";
+import StxSignStructuredMessage from "./components/stacks/signStructuredMessage";
 import StxGetAddresses from "./components/stacks/getAddresses";
 import StxDeployContract from "./components/stacks/deployContract";
 
@@ -291,7 +292,9 @@ function App() {
 
         <StxCallContract network={network} />
 
-        <StxSignMessage />
+        <StxSignMessage network={network} />
+
+        <StxSignStructuredMessage network={network} />
 
         <StxDeployContract network={network} />
       </div>
