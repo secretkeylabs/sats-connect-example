@@ -277,7 +277,8 @@ function App() {
 
       <h2>Stacks</h2>
       <div>
-        <p>Stacks address: {stacksAddress}</p>
+        <p>Stacks Address: {stacksAddress}</p>
+        <p>Stacks PubKey: {stacksPublicKey}</p>
         <br />
 
         <StxGetAccounts />
