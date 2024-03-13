@@ -15,14 +15,14 @@ import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
 
 // Stacks
-import StxSignTransaction from "./components/stacks/signTransaction";
 import StxCallContract from "./components/stacks/callContract";
+import StxDeployContract from "./components/stacks/deployContract";
 import StxGetAccounts from "./components/stacks/getAccounts";
-import StxTransferStx from "./components/stacks/transferStx";
+import StxGetAddresses from "./components/stacks/getAddresses";
 import StxSignMessage from "./components/stacks/signMessage";
 import StxSignStructuredMessage from "./components/stacks/signStructuredMessage";
-import StxGetAddresses from "./components/stacks/getAddresses";
-import StxDeployContract from "./components/stacks/deployContract";
+import StxSignTransaction from "./components/stacks/signTransaction";
+import StxTransferStx from "./components/stacks/transferStx";
 
 import { useLocalStorage } from "./useLocalStorage";
 
@@ -223,7 +223,9 @@ function App() {
       <h1>Sats Connect Test App - {network}</h1>
       <div>
         <div>Payment Address: {paymentAddress}</div>
+        <div>Payment PubKey: {paymentPublicKey}</div>
         <div>Ordinals Address: {ordinalsAddress}</div>
+        <div>Ordinals PubKey: {ordinalsPublicKey}</div>
         <br />
 
         <div className="container">
@@ -276,7 +278,8 @@ function App() {
 
       <h2>Stacks</h2>
       <div>
-        <p>Stacks address: {stacksAddress}</p>
+        <p>Stacks Address: {stacksAddress}</p>
+        <p>Stacks PubKey: {stacksPublicKey}</p>
         <br />
 
         <StxGetAccounts />
