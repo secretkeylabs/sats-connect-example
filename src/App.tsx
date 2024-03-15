@@ -242,7 +242,7 @@ function App() {
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
           </button>
-          <button style={{ height: 30, width: 180 }} onClick={onConnectAccountClick}>
+          <button style={{ height: 30, width: 180, marginLeft: 10 }} onClick={onConnectAccountClick}>
             Connect Account
           </button>
         </div>
