@@ -76,7 +76,7 @@ export const createPSBT = async (
     },
     redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
     witnessScript: p2sh.witnessScript,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+    sighashType: btc.SignatureHash.NONE,
   });
 
   // ordinals input
