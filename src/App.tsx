@@ -165,7 +165,10 @@ function App() {
   };
 
   const onConnectAccountClick = async () => {
-    const response = await request('getAccounts', null);
+    const response = await request('getAccounts', {
+      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
+      message: 'SATS Connect Demo',
+    });
     console.log("getAccounts ~ response:", response)
     if (response.status === 'success') {
       const paymentAddressItem = response.result.find(
