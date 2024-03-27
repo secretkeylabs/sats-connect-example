@@ -164,6 +164,38 @@ function App() {
     });
   };
 
+  const onConnectAccountClick = async () => {
+    const response = await request('getAccounts', {
+      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
+      message: 'SATS Connect Demo',
+    });
+    console.log("getAccounts ~ response:", response)
+    if (response.status === 'success') {
+      const paymentAddressItem = response.result.find(
+        (address) => address.purpose === AddressPurpose.Payment
+      );
+      setPaymentAddress(paymentAddressItem?.address);
+      setPaymentPublicKey(paymentAddressItem?.publicKey);
+
+      const ordinalsAddressItem = response.result.find(
+        (address) => address.purpose === AddressPurpose.Ordinals
+      );
+      setOrdinalsAddress(ordinalsAddressItem?.address);
+      setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
+
+      const stacksAddressItem = response.result.find(
+        (address) => address.purpose === AddressPurpose.Stacks
+      );
+      setStacksAddress(stacksAddressItem?.address);
+      setStacksPublicKey(stacksAddressItem?.publicKey);
+    } else {
+      if (response.error) {
+        alert("Error getting accounts. Check console for error logs");
+        console.error(response.error);
+      }
+    }
+  }
+
   const capabilityMessage =
     capabilityState === "loading"
       ? "Checking capabilities..."
@@ -212,6 +244,9 @@ function App() {
           <br />
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
+          </button>
+          <button style={{ height: 30, width: 180, marginLeft: 10 }} onClick={onConnectAccountClick}>
+            Connect Account
           </button>
         </div>
       </div>
