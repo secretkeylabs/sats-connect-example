@@ -45,7 +45,7 @@ export const createPSBT = async (
   const ordinalOutput = ordinalsUnspentOutputs[0];
 
   const paymentPublicKey = hex.decode(paymentPublicKeyString);
-  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
+  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString.slice(2));
 
   const tx = new btc.Transaction({
     allowUnknownOutputs: true,
@@ -67,17 +67,17 @@ export const createPSBT = async (
     BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee;
 
   // payment input
-  tx.addInput({
-    txid: paymentOutput.txid,
-    index: paymentOutput.vout,
-    witnessUtxo: {
-      script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-      amount: BigInt(paymentOutput.value),
-    },
-    redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
-    witnessScript: p2sh.witnessScript,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  });
+  // tx.addInput({
+  //   txid: paymentOutput.txid,
+  //   index: paymentOutput.vout,
+  //   witnessUtxo: {
+  //     script: p2sh.script ? p2sh.script : Buffer.alloc(0),
+  //     amount: BigInt(paymentOutput.value),
+  //   },
+  //   redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
+  //   witnessScript: p2sh.witnessScript,
+  //   sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+  // });
 
   // ordinals input
   tx.addInput({
@@ -106,5 +106,6 @@ export const createPSBT = async (
 
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);
+  console.log(psbtB64);
   return psbtB64;
 };
