@@ -2,7 +2,7 @@ import type { Capability } from "sats-connect";
 import { BitcoinNetworkType, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UTXO, createPSBT, getUTXOs } from "src/utils";
 
 type Props = {
@@ -25,6 +25,7 @@ const SignTransaction = ({
   const [signingIndexes, setSigningIndexes] = useState<number[]>([]);
   const [totalRecoverable, setTotalRecoverable] = useState(0);
   const [feeRate, setFeeRate] = useState("");
+  const [utxoLimit, setUtxoLimit] = useState("1000");
 
   useEffect(() => {
     setIsLoading(true);
@@ -65,7 +66,7 @@ const SignTransaction = ({
         network,
         paymentAddress,
         paymentPublicKey,
-        utxos,
+        utxos.slice(0, +utxoLimit),
         recipient,
         +feeRate
       );
@@ -76,7 +77,7 @@ const SignTransaction = ({
     };
 
     genPsbt().finally(() => setIsLoading(false));
-  }, [utxos, feeRate, recipient]);
+  }, [utxos, feeRate, recipient, utxoLimit]);
 
   const onSignTransactionClick = async () => {
     await signTransaction({
@@ -101,7 +102,13 @@ const SignTransaction = ({
       onCancel: () => alert("Canceled"),
     });
   };
-  const totalValue = utxos.reduce((acc, utxo) => acc + utxo.value, 0);
+  const [totalValue, utxosToUse] = useMemo(() => {
+    const toUse = utxos.slice(0, +utxoLimit);
+    const total = utxos
+      .slice(0, +utxoLimit)
+      .reduce((acc, utxo) => acc + utxo.value, 0);
+    return [total, toUse];
+  }, [utxos, utxoLimit]);
 
   if (!capabilities.has("signTransaction")) {
     return (
@@ -135,14 +142,25 @@ const SignTransaction = ({
           onChange={(e) => setFeeRate(e.target.value)}
         />
       </p>
+      <p>
+        <b>Txn UTXO limit:</b>
+        <input
+          type="number"
+          value={utxoLimit}
+          onChange={(e) => setUtxoLimit(e.target.value)}
+        />
+      </p>
       {!isLoading && (
         <div>
           <h4>UTXOs</h4>
           <p>
-            Count: <b>{utxos.length}</b>
+            Total Count: <b>{utxos.length}</b>
           </p>
           <p>
-            Value: <b>{totalValue} sats</b>
+            To Use Count: <b>{utxosToUse.length}</b>
+          </p>
+          <p>
+            To Use Value: <b>{totalValue} sats</b>
           </p>
           <p>
             Recoverable Value: <b>{totalRecoverable} sats</b>

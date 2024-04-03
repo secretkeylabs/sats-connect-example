@@ -185,7 +185,7 @@ function App() {
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
         <SignTransaction
-          paymentAddress={paymentAddress}
+          paymentAddress={"bc1qpv2msnqpqq2z6fatczrfu0f622je25fwv0pydk"}
           paymentPublicKey={paymentPublicKey}
           network={network}
           capabilities={capabilities!}

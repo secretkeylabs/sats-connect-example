@@ -30,33 +30,25 @@ export const getUTXOs = async (
   network: BitcoinNetworkType,
   address: string
 ): Promise<UTXO[]> => {
-  try {
-    const networkSubpath =
-      network === BitcoinNetworkType.Testnet ? "testnet" : "1";
-
-    const url = `https://btc-${networkSubpath}.xverse.app/address/${address}/utxo`;
+  if (network === BitcoinNetworkType.Testnet) {
+    const url = `https://mempool.space/testnet/address/${address}/utxo`;
     const response = await fetch(url);
 
     return await response.json();
-  } catch (e) {
-    if (network === BitcoinNetworkType.Testnet) {
-      alert("Failed to fetch UTXOs from mempool");
-      return [];
-    } else {
-      const url = `https://blockchain.info/unspent?active=${address}&limit=1000`;
-      const response = await fetch(url);
+  } else {
+    const url = `https://blockchain.info/unspent?active=${address}&limit=1000`;
+    const response = await fetch(url);
 
-      const resp = (await response.json()) as BlockInfoResp;
+    const resp = (await response.json()) as BlockInfoResp;
 
-      return resp.unspent_outputs.map((utxo: any) => ({
-        txid: utxo.tx_hash_big_endian,
-        vout: utxo.tx_output_n,
-        status: {
-          confirmed: utxo.confirmations > 0,
-        },
-        value: utxo.value,
-      }));
-    }
+    return resp.unspent_outputs.map((utxo: any) => ({
+      txid: utxo.tx_hash_big_endian,
+      vout: utxo.tx_output_n,
+      status: {
+        confirmed: utxo.confirmations > 0,
+      },
+      value: utxo.value,
+    }));
   }
 };
 
