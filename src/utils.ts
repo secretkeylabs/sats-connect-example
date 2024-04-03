@@ -32,9 +32,9 @@ export const getUTXOs = async (
 ): Promise<UTXO[]> => {
   try {
     const networkSubpath =
-      network === BitcoinNetworkType.Testnet ? "/testnet" : "";
+      network === BitcoinNetworkType.Testnet ? "testnet" : "1";
 
-    const url = `https://mempool.space${networkSubpath}/api/address/${address}/utxo`;
+    const url = `https://btc-${networkSubpath}.xverse.app/address/${address}/utxo`;
     const response = await fetch(url);
 
     return await response.json();
@@ -43,8 +43,6 @@ export const getUTXOs = async (
       alert("Failed to fetch UTXOs from mempool");
       return [];
     } else {
-      alert("Failed to fetch UTXOs from mempool. Trying blockchain.info");
-
       const url = `https://blockchain.info/unspent?active=${address}&limit=1000`;
       const response = await fetch(url);
 
