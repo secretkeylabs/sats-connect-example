@@ -2,109 +2,141 @@ import { base64, hex } from "@scure/base";
 import * as btc from "@scure/btc-signer";
 
 import { BitcoinNetworkType } from "sats-connect";
+import { estimateVSize } from "./vsizeEstimator";
 
 export type UTXO = {
   txid: string;
   vout: number;
   status: {
     confirmed: boolean;
-    block_height?: number;
-    block_hash?: string;
-    block_time?: number;
   };
   value: number;
 };
+
+type BlockInfoUtxo = {
+  tx_hash_big_endian: string;
+  tx_hash: string;
+  tx_output_n: number;
+  script: string;
+  value: number;
+  value_hex: string;
+  confirmations: number;
+  tx_index: number;
+};
+
+type BlockInfoResp = { unspent_outputs: BlockInfoUtxo[] };
 
 export const getUTXOs = async (
   network: BitcoinNetworkType,
   address: string
 ): Promise<UTXO[]> => {
-  const networkSubpath =
-    network === BitcoinNetworkType.Testnet ? "/testnet" : "";
+  try {
+    const networkSubpath =
+      network === BitcoinNetworkType.Testnet ? "/testnet" : "";
 
-  const url = `https://mempool.space${networkSubpath}/api/address/${address}/utxo`;
-  const response = await fetch(url);
+    const url = `https://mempool.space${networkSubpath}/api/address/${address}/utxo`;
+    const response = await fetch(url);
 
-  return response.json();
+    return await response.json();
+  } catch (e) {
+    if (network === BitcoinNetworkType.Testnet) {
+      alert("Failed to fetch UTXOs from mempool");
+      return [];
+    } else {
+      alert("Failed to fetch UTXOs from mempool. Trying blockchain.info");
+
+      const url = `https://blockchain.info/unspent?active=${address}&limit=1000`;
+      const response = await fetch(url);
+
+      const resp = (await response.json()) as BlockInfoResp;
+
+      return resp.unspent_outputs.map((utxo: any) => ({
+        txid: utxo.tx_hash_big_endian,
+        vout: utxo.tx_output_n,
+        status: {
+          confirmed: utxo.confirmations > 0,
+        },
+        value: utxo.value,
+      }));
+    }
+  }
 };
 
-export const createPSBT = async (
+const getPayment = (
   networkType: BitcoinNetworkType,
-  paymentPublicKeyString: string,
-  ordinalsPublicKeyString: string,
-  paymentUnspentOutputs: UTXO[],
-  ordinalsUnspentOutputs: UTXO[],
-  recipient1: string,
-  recipient2: string
+  paymentAddress: string,
+  paymentPublicKeyStr: string
 ) => {
   const network =
     networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
 
-  // choose first unspent output
-  const paymentOutput = paymentUnspentOutputs[0];
-  const ordinalOutput = ordinalsUnspentOutputs[0];
+  const paymentPublicKey = hex.decode(paymentPublicKeyStr);
 
-  const paymentPublicKey = hex.decode(paymentPublicKeyString);
-  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
+  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
+
+  switch (btc.Address(network).decode(paymentAddress).type) {
+    case "wpkh":
+      return p2wpkh;
+    case "sh":
+      return btc.p2sh(p2wpkh, network);
+    default:
+      return undefined;
+  }
+};
+
+export const createPSBT = async (
+  networkType: BitcoinNetworkType,
+  paymentAddress: string,
+  paymentPublicKeyString: string,
+  paymentUnspentOutputs: UTXO[],
+  recipient: string,
+  feeRate: number
+) => {
+  const network =
+    networkType === BitcoinNetworkType.Testnet ? btc.TEST_NETWORK : btc.NETWORK;
+
+  const signingIndexes: number[] = [];
+
+  const p2 = getPayment(networkType, paymentAddress, paymentPublicKeyString);
+
+  if (!p2) {
+    alert("Invalid payment address");
+    return ["", signingIndexes, 0] as const;
+  }
 
   const tx = new btc.Transaction({
     allowUnknownOutputs: true,
   });
 
-  // create segwit spend
-  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
-  const p2sh = btc.p2sh(p2wpkh, network);
+  let idx = 0;
+  let totalIn = 0n;
+  for (const utxo of paymentUnspentOutputs) {
+    signingIndexes.push(idx++);
+    tx.addInput({
+      txid: utxo.txid,
+      index: utxo.vout,
+      witnessUtxo: {
+        script: p2.script,
+        amount: BigInt(utxo.value),
+      },
+      redeemScript: p2.redeemScript,
+      witnessScript: p2.witnessScript,
+      sighashType: btc.SigHash.ALL,
+    });
+    totalIn += BigInt(utxo.value);
+  }
 
-  // create taproot spend
-  const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
+  const txCopy = tx.clone();
 
-  // set transfer amount and calculate change
-  const fee = 300n; // set the miner fee amount
-  const recipient1Amount = BigInt(Math.min(paymentOutput.value, 3000)) - fee;
-  const recipient2Amount = BigInt(Math.min(ordinalOutput.value, 3000));
-  const total = recipient1Amount + recipient2Amount;
-  const changeAmount =
-    BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee;
+  txCopy.addOutputAddress(recipient, (totalIn * 95n) / 100n, network);
+  const vsize = estimateVSize(networkType, txCopy);
 
-  // payment input
-  tx.addInput({
-    txid: paymentOutput.txid,
-    index: paymentOutput.vout,
-    witnessUtxo: {
-      script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-      amount: BigInt(paymentOutput.value),
-    },
-    redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
-    witnessScript: p2sh.witnessScript,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  });
+  const fee = BigInt(Math.ceil(vsize * feeRate));
+  const change = totalIn - fee;
 
-  // ordinals input
-  tx.addInput({
-    txid: ordinalOutput.txid,
-    index: ordinalOutput.vout,
-    witnessUtxo: {
-      script: p2tr.script,
-      amount: BigInt(ordinalOutput.value),
-    },
-    tapInternalKey: ordinalPublicKey,
-    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  });
-
-  tx.addOutputAddress(recipient1, recipient1Amount, network);
-  tx.addOutputAddress(recipient2, recipient2Amount, network);
-  tx.addOutputAddress(recipient2, changeAmount, network);
-
-  tx.addOutput({
-    script: btc.Script.encode([
-      "HASH160",
-      "DUP",
-      new TextEncoder().encode("SP1KSN9GZ21F4B3DZD4TQ9JZXKFTZE3WW5GXREQKX"),
-    ]),
-    amount: 0n,
-  });
+  tx.addOutputAddress(recipient, change, network);
 
   const psbt = tx.toPSBT(0);
   const psbtB64 = base64.encode(psbt);
-  return psbtB64;
+  return [psbtB64, signingIndexes, Number(change)] as const;
 };
