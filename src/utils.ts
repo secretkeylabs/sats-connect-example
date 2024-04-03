@@ -45,15 +45,15 @@ export const createPSBT = async (
   const ordinalOutput = ordinalsUnspentOutputs[0];
 
   const paymentPublicKey = hex.decode(paymentPublicKeyString);
-  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString.slice(2));
+  const ordinalPublicKey = hex.decode(ordinalsPublicKeyString);
 
   const tx = new btc.Transaction({
     allowUnknownOutputs: true,
   });
 
   // create segwit spend
-  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
-  const p2sh = btc.p2sh(p2wpkh, network);
+  // const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
+  // const p2sh = btc.p2sh(p2wpkh, network);
 
   // create taproot spend
   const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
