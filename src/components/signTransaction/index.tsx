@@ -37,7 +37,7 @@ const SignTransaction = ({
         inputsToSign: [
           {
             address: ordinalsAddress,
-            signingIndexes: [0, 1],
+            signingIndexes: [0],
             sigHash: btc.SigHash.DEFAULT,
           },
         ],
