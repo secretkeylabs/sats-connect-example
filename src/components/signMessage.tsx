@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { Capability } from "sats-connect";
-import WalletProvider, {
+import Wallet, {
   BitcoinNetworkType,
   RpcErrorCode,
   signMessage,
@@ -35,7 +35,7 @@ const SignMessage = ({ network, address, capabilities }: Props) => {
 
   const onSignMessageRpcClick = async () => {
     try {
-      const response = await WalletProvider.request("signMessage", {
+      const response = await Wallet.request("signMessage", {
         address,
         message,
       });

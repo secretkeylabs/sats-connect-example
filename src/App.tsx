@@ -1,11 +1,10 @@
 import type { Capability } from "sats-connect";
-import WalletProvider, {
+import Wallet, {
   AddressPurpose,
   BitcoinNetworkType,
   getAddress,
   getCapabilities,
   getProviders,
-  request,
 } from "sats-connect";
 
 import CreateFileInscription from "./components/createFileInscription";
@@ -95,7 +94,7 @@ function App() {
     !!ordinalsPublicKey;
 
   const onWalletDisconnect = () => {
-    WalletProvider.disconnect();
+    Wallet.disconnect();
     setPaymentAddress(undefined);
     setPaymentPublicKey(undefined);
     setOrdinalsAddress(undefined);
@@ -105,7 +104,7 @@ function App() {
 
   const handleGetInfo = async () => {
     try {
-      const response = await WalletProvider.request("getInfo", null);
+      const response = await Wallet.request("getInfo", null);
 
       if (response.status === "success") {
         alert("Success. Check console for response");
@@ -165,7 +164,7 @@ function App() {
   };
 
   const onConnectAccountClick = async () => {
-    const response = await WalletProvider.request("getAccounts", {
+    const response = await Wallet.request("getAccounts", {
       purposes: [
         AddressPurpose.Ordinals,
         AddressPurpose.Payment,
