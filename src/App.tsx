@@ -88,6 +88,7 @@ function App() {
   }, [network]);
 
   const isReady =
+    !!capabilities &&
     !!paymentAddress &&
     !!paymentPublicKey &&
     !!ordinalsAddress &&
