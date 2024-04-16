@@ -209,14 +209,14 @@ function App() {
       ? "Something went wrong with getting capabilities"
       : undefined;
 
-  if (capabilityMessage) {
-    return (
-      <div style={{ padding: 30 }}>
-        <h1>Sats Connect Test App - {network}</h1>
-        <div>{capabilityMessage}</div>
-      </div>
-    );
-  }
+  // if (capabilityMessage) {
+  //   return (
+  //     <div style={{ padding: 30 }}>
+  //       <h1>Sats Connect Test App - {network}</h1>
+  //       <div>{capabilityMessage}</div>
+  //     </div>
+  //   );
+  // }
 
   if (!isReady) {
     return (
