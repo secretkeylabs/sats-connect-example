@@ -8,43 +8,24 @@ import {
   request,
 } from "sats-connect";
 
-import CreateFileInscription from "./components/createFileInscription";
-import CreateTextInscription from "./components/createTextInscription";
-import SendBitcoin from "./components/sendBitcoin";
-import SignMessage from "./components/signMessage";
-import SignTransaction from "./components/signTransaction";
-
-// Stacks
-import StxCallContract from "./components/stacks/callContract";
-import StxDeployContract from "./components/stacks/deployContract";
-import StxGetAccounts from "./components/stacks/getAccounts";
-import StxGetAddresses from "./components/stacks/getAddresses";
-import StxSignMessage from "./components/stacks/signMessage";
-import StxSignStructuredMessage from "./components/stacks/signStructuredMessage";
-import StxSignTransaction from "./components/stacks/signTransaction";
-import StxTransferStx from "./components/stacks/transferStx";
-
 import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
-import SignBulkTransaction from "./components/signBulkTransaction";
+import RuneTransfer from "./components/runesTransfer";
 
 function App() {
-  const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
+  const [paymentAddress, setPaymentAddress] =
+    useLocalStorage<string>("paymentAddress");
   const [paymentPublicKey, setPaymentPublicKey] =
-    useLocalStorage("paymentPublicKey");
+    useLocalStorage<string>("paymentPublicKey");
   const [ordinalsAddress, setOrdinalsAddress] =
-    useLocalStorage("ordinalsAddress");
+    useLocalStorage<string>("ordinalsAddress");
   const [ordinalsPublicKey, setOrdinalsPublicKey] =
-    useLocalStorage("ordinalsPublicKey");
-  const [stacksAddress, setStacksAddress] = useLocalStorage("stacksAddress");
-  const [stacksPublicKey, setStacksPublicKey] =
-    useLocalStorage("stacksPublicKey");
+    useLocalStorage<string>("ordinalsPublicKey");
   const [network, setNetwork] = useLocalStorage<BitcoinNetworkType>(
     "network",
-    BitcoinNetworkType.Testnet
+    BitcoinNetworkType.Mainnet
   );
   const [capabilityState, setCapabilityState] = useState<
     "loading" | "loaded" | "missing" | "cancelled"
@@ -92,15 +73,13 @@ function App() {
     !!paymentAddress &&
     !!paymentPublicKey &&
     !!ordinalsAddress &&
-    !!ordinalsPublicKey &&
-    !!stacksAddress;
+    !!ordinalsPublicKey;
 
   const onWalletDisconnect = () => {
     setPaymentAddress(undefined);
     setPaymentPublicKey(undefined);
     setOrdinalsAddress(undefined);
     setOrdinalsPublicKey(undefined);
-    setStacksAddress(undefined);
   };
 
   const handleGetInfo = async () => {
@@ -131,11 +110,7 @@ function App() {
   const onConnectClick = async () => {
     await getAddress({
       payload: {
-        purposes: [
-          AddressPurpose.Ordinals,
-          AddressPurpose.Payment,
-          AddressPurpose.Stacks,
-        ],
+        purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment],
         message: "SATS Connect Demo",
         network: {
           type: network,
@@ -153,48 +128,10 @@ function App() {
         );
         setOrdinalsAddress(ordinalsAddressItem?.address);
         setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
-
-        const stacksAddressItem = response.addresses.find(
-          (address) => address.purpose === AddressPurpose.Stacks
-        );
-        setStacksAddress(stacksAddressItem?.address);
-        setStacksPublicKey(stacksAddressItem?.publicKey);
       },
       onCancel: () => alert("Request canceled"),
     });
   };
-
-  const onConnectAccountClick = async () => {
-    const response = await request('getAccounts', {
-      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
-      message: 'SATS Connect Demo',
-    });
-    console.log("getAccounts ~ response:", response)
-    if (response.status === 'success') {
-      const paymentAddressItem = response.result.find(
-        (address) => address.purpose === AddressPurpose.Payment
-      );
-      setPaymentAddress(paymentAddressItem?.address);
-      setPaymentPublicKey(paymentAddressItem?.publicKey);
-
-      const ordinalsAddressItem = response.result.find(
-        (address) => address.purpose === AddressPurpose.Ordinals
-      );
-      setOrdinalsAddress(ordinalsAddressItem?.address);
-      setOrdinalsPublicKey(ordinalsAddressItem?.publicKey);
-
-      const stacksAddressItem = response.result.find(
-        (address) => address.purpose === AddressPurpose.Stacks
-      );
-      setStacksAddress(stacksAddressItem?.address);
-      setStacksPublicKey(stacksAddressItem?.publicKey);
-    } else {
-      if (response.error) {
-        alert("Error getting accounts. Check console for error logs");
-        console.error(response.error);
-      }
-    }
-  }
 
   const capabilityMessage =
     capabilityState === "loading"
@@ -221,21 +158,6 @@ function App() {
       <div style={{ padding: 30 }}>
         <h1>Sats Connect Test App - {network}</h1>
         <div>Please connect your wallet to continue</div>
-        <h2>Available Wallets</h2>
-        <div>
-          {providers
-            ? providers.map((provider) => (
-                <button
-                  key={provider.id}
-                  className="provider"
-                  onClick={() => window.open(provider.chromeWebStoreUrl)}
-                >
-                  <img className="providerImg" src={provider.icon} />
-                  <p className="providerName">{provider.name}</p>
-                </button>
-              ))
-            : null}
-        </div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
             Switch Network
@@ -244,9 +166,6 @@ function App() {
           <br />
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
-          </button>
-          <button style={{ height: 30, width: 180, marginLeft: 10 }} onClick={onConnectAccountClick}>
-            Connect Account
           </button>
         </div>
       </div>
@@ -267,74 +186,14 @@ function App() {
           <h3>Disconnect wallet</h3>
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
-        <div className="container">
-          <h3>Get Wallet Info</h3>
-          <button onClick={handleGetInfo}>Request Info</button>
-        </div>
-        <SignTransaction
-          paymentAddress={paymentAddress}
-          paymentPublicKey={paymentPublicKey}
+
+        <RuneTransfer
+          paymentsAddress={paymentAddress}
+          paymentsPublicKey={paymentPublicKey}
           ordinalsAddress={ordinalsAddress}
           ordinalsPublicKey={ordinalsPublicKey}
           network={network}
-          capabilities={capabilities!}
         />
-
-        <SignBulkTransaction
-          paymentAddress={paymentAddress}
-          paymentPublicKey={paymentPublicKey}
-          ordinalsAddress={ordinalsAddress}
-          ordinalsPublicKey={ordinalsPublicKey}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <SignMessage
-          address={ordinalsAddress}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <SendBitcoin
-          address={paymentAddress}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <CreateTextInscription network={network} capabilities={capabilities!} />
-
-        <CreateRepeatInscriptions
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <CreateFileInscription network={network} capabilities={capabilities!} />
-      </div>
-
-      <h2>Stacks</h2>
-      <div>
-        <p>Stacks Address: {stacksAddress}</p>
-        <p>Stacks PubKey: {stacksPublicKey}</p>
-        <br />
-
-        <StxGetAccounts />
-
-        <StxGetAddresses />
-
-        <StxTransferStx address={stacksAddress} />
-
-        <StxSignTransaction
-          network={network}
-          publicKey={stacksPublicKey || ""}
-        />
-
-        <StxCallContract network={network} />
-
-        <StxSignMessage network={network} />
-
-        <StxSignStructuredMessage network={network} />
-
-        <StxDeployContract network={network} />
       </div>
     </div>
   );
