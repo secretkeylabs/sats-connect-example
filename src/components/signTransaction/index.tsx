@@ -1,5 +1,5 @@
 import type { Capability } from "sats-connect";
-import Wallet, {
+import {
   BitcoinNetworkType,
   RpcErrorCode,
   request,
@@ -94,7 +94,7 @@ const SignTransaction = ({
     }
 
     try {
-      const response = await Wallet.request("signPsbt", {
+      const response = await request("signPsbt", {
         psbt: psbtBase64,
         allowedSignHash: btc.SigHash.SINGLE | btc.SigHash.DEFAULT_ANYONECANPAY,
         signInputs: {

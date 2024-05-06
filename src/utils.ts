@@ -52,8 +52,8 @@ export const createPSBT = async (
   });
 
   // create segwit spend
-  // const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
-  // const p2sh = btc.p2sh(p2wpkh, network);
+  const p2wpkh = btc.p2wpkh(paymentPublicKey, network);
+  const p2sh = btc.p2sh(p2wpkh, network);
 
   // create taproot spend
   const p2tr = btc.p2tr(ordinalPublicKey, undefined, network);
@@ -67,17 +67,17 @@ export const createPSBT = async (
     BigInt(paymentOutput.value) + BigInt(ordinalOutput.value) - total - fee;
 
   // payment input
-  // tx.addInput({
-  //   txid: paymentOutput.txid,
-  //   index: paymentOutput.vout,
-  //   witnessUtxo: {
-  //     script: p2sh.script ? p2sh.script : Buffer.alloc(0),
-  //     amount: BigInt(paymentOutput.value),
-  //   },
-  //   redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
-  //   witnessScript: p2sh.witnessScript,
-  //   sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-  // });
+  tx.addInput({
+    txid: paymentOutput.txid,
+    index: paymentOutput.vout,
+    witnessUtxo: {
+      script: p2sh.script ? p2sh.script : Buffer.alloc(0),
+      amount: BigInt(paymentOutput.value),
+    },
+    redeemScript: p2sh.redeemScript ? p2sh.redeemScript : Buffer.alloc(0),
+    witnessScript: p2sh.witnessScript,
+    sighashType: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+  });
 
   // ordinals input
   tx.addInput({
