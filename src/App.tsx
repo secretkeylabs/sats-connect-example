@@ -29,6 +29,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
+import GetRunesBalance from "./components/getRuneBalance";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -291,6 +292,7 @@ function App() {
           network={network}
           capabilities={capabilities!}
         />
+        <GetRunesBalance />
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
