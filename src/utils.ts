@@ -13,43 +13,105 @@ export type UTXO = {
   value: number;
 };
 
-type BlockInfoUtxo = {
-  tx_hash_big_endian: string;
-  tx_hash: string;
-  tx_output_n: number;
-  script: string;
-  value: number;
-  value_hex: string;
-  confirmations: number;
-  tx_index: number;
+const utxoConfig = {
+  promise: undefined as Promise<UTXO[]> | undefined,
+  limit: 1000,
+};
+export const getUTXOs = async (
+  network: BitcoinNetworkType,
+  address: string,
+  limit = 1000
+): Promise<UTXO[]> => {
+  utxoConfig.limit = limit;
+
+  if (utxoConfig.promise) {
+    return utxoConfig.promise;
+  }
+
+  utxoConfig.promise = getUTXOsInternal(network, address).finally(() => {
+    utxoConfig.promise = undefined;
+  });
+
+  return utxoConfig.promise;
 };
 
-type BlockInfoResp = { unspent_outputs: BlockInfoUtxo[] };
-
-export const getUTXOs = async (
+const getUTXOsInternal = async (
   network: BitcoinNetworkType,
   address: string
 ): Promise<UTXO[]> => {
-  if (network === BitcoinNetworkType.Testnet) {
-    const url = `https://mempool.space/testnet/address/${address}/utxo`;
-    const response = await fetch(url);
+  const url =
+    network === BitcoinNetworkType.Testnet
+      ? `https://btc-testnet.xverse.app/address/${address}/txs`
+      : `https://btc-1.xverse.app/address/${address}/txs`;
 
-    return await response.json();
-  } else {
-    const url = `https://blockchain.info/unspent?active=${address}&limit=1000`;
-    const response = await fetch(url);
+  const response = await fetch(url);
 
-    const resp = (await response.json()) as BlockInfoResp;
+  const allTxns = await response.json();
 
-    return resp.unspent_outputs.map((utxo: any) => ({
-      txid: utxo.tx_hash_big_endian,
-      vout: utxo.tx_output_n,
-      status: {
-        confirmed: utxo.confirmations > 0,
-      },
-      value: utxo.value,
-    }));
+  let done = allTxns.length === 0;
+
+  while (!done) {
+    const response = await fetch(
+      url + `?after_txid=${allTxns[allTxns.length - 1].txid}`
+    );
+
+    if (response.status === 429) {
+      console.log("Rate limited, waiting 5 seconds...");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      continue;
+    }
+
+    const batchTxns = await response.json();
+
+    allTxns.push(...batchTxns);
+
+    done = batchTxns.length === 0;
   }
+
+  const validTxns: any[] = [];
+  for (const tx of allTxns) {
+    if (
+      tx.vout.some((output: any) => output.scriptpubkey_address === address)
+    ) {
+      validTxns.push(tx);
+    }
+  }
+
+  const utxos: UTXO[] = [];
+  for (const tx of validTxns) {
+    const response = await fetch(
+      network === BitcoinNetworkType.Testnet
+        ? `https://btc-testnet.xverse.app/tx/${tx.txid}/outspends`
+        : `https://btc-1.xverse.app/tx/${tx.txid}/outspends`
+    );
+
+    if (response.status === 429) {
+      console.log("Rate limited, waiting 5 seconds...");
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      continue;
+    }
+
+    const outSpends = await response.json();
+
+    for (const [idx, output] of tx.vout.entries()) {
+      if (output.scriptpubkey_address === address && !outSpends[idx].spent) {
+        utxos.push({
+          txid: tx.txid,
+          vout: idx,
+          status: {
+            confirmed: tx.status.confirmed,
+          },
+          value: output.value,
+        });
+
+        if (utxos.length >= utxoConfig.limit) {
+          return utxos;
+        }
+      }
+    }
+  }
+
+  return utxos;
 };
 
 const getPayment = (

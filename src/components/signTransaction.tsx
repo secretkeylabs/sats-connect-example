@@ -150,6 +150,14 @@ const SignTransaction = ({
           onChange={(e) => setUtxoLimit(e.target.value)}
         />
       </p>
+      {isLoading && (
+        <>
+          <div style={{ color: "green", fontWeight: "bold" }}>
+            Loading UTXOs... This may take a while.
+          </div>
+          <br />
+        </>
+      )}
       {!isLoading && (
         <div>
           <h4>UTXOs</h4>
