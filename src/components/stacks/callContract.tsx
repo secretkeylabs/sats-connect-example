@@ -21,7 +21,7 @@ const inputDefaults = {
 };
 
 type Props = {
-  network: BitcoinNetworkType;
+  network: BitcoinNetworkType.Testnet | BitcoinNetworkType.Mainnet;
 };
 
 function CallContract({ network }: Props) {

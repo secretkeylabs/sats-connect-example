@@ -11,7 +11,7 @@ const chainIds = {
 };
 
 interface Props {
-  network: BitcoinNetworkType;
+  network: BitcoinNetworkType.Testnet | BitcoinNetworkType.Mainnet;
 }
 export function SignStructuredMessage({ network }: Props) {
   const onMessagingSigningClicked = async () => {
