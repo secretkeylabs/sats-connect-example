@@ -5,31 +5,14 @@ import {
   getAddress,
   getCapabilities,
   getProviders,
-  request,
 } from "sats-connect";
 
-import CreateFileInscription from "./components/createFileInscription";
-import CreateTextInscription from "./components/createTextInscription";
-import SendBitcoin from "./components/sendBitcoin";
-import SignMessage from "./components/signMessage";
 import SignTransaction from "./components/signTransaction";
-
-// Stacks
-import StxCallContract from "./components/stacks/callContract";
-import StxDeployContract from "./components/stacks/deployContract";
-import StxGetAccounts from "./components/stacks/getAccounts";
-import StxGetAddresses from "./components/stacks/getAddresses";
-import StxSignMessage from "./components/stacks/signMessage";
-import StxSignStructuredMessage from "./components/stacks/signStructuredMessage";
-import StxSignTransaction from "./components/stacks/signTransaction";
-import StxTransferStx from "./components/stacks/transferStx";
 
 import { useLocalStorage } from "./useLocalStorage";
 
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
-import SignBulkTransaction from "./components/signBulkTransaction";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -44,7 +27,7 @@ function App() {
     useLocalStorage("stacksPublicKey");
   const [network, setNetwork] = useLocalStorage<BitcoinNetworkType>(
     "network",
-    BitcoinNetworkType.Testnet
+    BitcoinNetworkType.Mainnet
   );
   const [capabilityState, setCapabilityState] = useState<
     "loading" | "loaded" | "missing" | "cancelled"
@@ -101,22 +84,6 @@ function App() {
     setOrdinalsAddress(undefined);
     setOrdinalsPublicKey(undefined);
     setStacksAddress(undefined);
-  };
-
-  const handleGetInfo = async () => {
-    try {
-      const response = await request("getInfo", null);
-
-      if (response.status === "success") {
-        alert("Success. Check console for response");
-        console.log(response.result);
-      } else {
-        alert("Error getting info. Check console for error logs");
-        console.error(response.error);
-      }
-    } catch (err) {
-      console.log(err);
-    }
   };
 
   const toggleNetwork = () => {
@@ -267,10 +234,6 @@ function App() {
           <h3>Disconnect wallet</h3>
           <button onClick={onWalletDisconnect}>Disconnect</button>
         </div>
-        <div className="container">
-          <h3>Get Wallet Info</h3>
-          <button onClick={handleGetInfo}>Request Info</button>
-        </div>
         <SignTransaction
           paymentAddress={paymentAddress}
           paymentPublicKey={paymentPublicKey}
@@ -279,62 +242,6 @@ function App() {
           network={network}
           capabilities={capabilities!}
         />
-
-        <SignBulkTransaction
-          paymentAddress={paymentAddress}
-          paymentPublicKey={paymentPublicKey}
-          ordinalsAddress={ordinalsAddress}
-          ordinalsPublicKey={ordinalsPublicKey}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <SignMessage
-          address={ordinalsAddress}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <SendBitcoin
-          address={paymentAddress}
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <CreateTextInscription network={network} capabilities={capabilities!} />
-
-        <CreateRepeatInscriptions
-          network={network}
-          capabilities={capabilities!}
-        />
-
-        <CreateFileInscription network={network} capabilities={capabilities!} />
-      </div>
-
-      <h2>Stacks</h2>
-      <div>
-        <p>Stacks Address: {stacksAddress}</p>
-        <p>Stacks PubKey: {stacksPublicKey}</p>
-        <br />
-
-        <StxGetAccounts />
-
-        <StxGetAddresses />
-
-        <StxTransferStx address={stacksAddress} />
-
-        <StxSignTransaction
-          network={network}
-          publicKey={stacksPublicKey || ""}
-        />
-
-        <StxCallContract network={network} />
-
-        <StxSignMessage network={network} />
-
-        <StxSignStructuredMessage network={network} />
-
-        <StxDeployContract network={network} />
       </div>
     </div>
   );

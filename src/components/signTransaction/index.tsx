@@ -1,13 +1,8 @@
 import type { Capability } from "sats-connect";
-import {
-  BitcoinNetworkType,
-  RpcErrorCode,
-  request,
-  signTransaction,
-} from "sats-connect";
+import { BitcoinNetworkType, signTransaction } from "sats-connect";
 
 import * as btc from "@scure/btc-signer";
-import { createTransaction } from "./utils";
+import { useState } from "react";
 
 type Props = {
   network: BitcoinNetworkType;
@@ -26,21 +21,11 @@ const SignTransaction = ({
   ordinalsPublicKey,
   capabilities,
 }: Props) => {
+  const [psbtBase64, setPsbt] = useState("");
+  const [broadcast, setBroadcast] = useState(false);
+
   const onSignTransactionClick = async () => {
-    const [error, psbtBase64] = await createTransaction({
-      network,
-      paymentAddress,
-      ordinalsAddress,
-      paymentPublicKey,
-      ordinalsPublicKey,
-    });
-
-    if (error) {
-      alert("Error creating transaction. Check console for error logs");
-      console.error(error);
-      return;
-    }
-
+    if (!psbtBase64) return;
     await signTransaction({
       payload: {
         network: {
@@ -48,17 +33,12 @@ const SignTransaction = ({
         },
         message: "Sign Transaction",
         psbtBase64,
-        broadcast: false,
+        broadcast,
         inputsToSign: [
           {
             address: paymentAddress,
             signingIndexes: [0],
-            sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
-          },
-          {
-            address: ordinalsAddress,
-            signingIndexes: [1],
-            sigHash: btc.SignatureHash.SINGLE | btc.SignatureHash.ANYONECANPAY,
+            sigHash: btc.SigHash.DEFAULT,
           },
         ],
       },
@@ -78,58 +58,29 @@ const SignTransaction = ({
     );
   }
 
-  const onSignTransactionRPC = async () => {
-    const [error, psbtBase64] = await createTransaction({
-      network,
-      paymentAddress,
-      ordinalsAddress,
-      paymentPublicKey,
-      ordinalsPublicKey,
-    });
-
-    if (error) {
-      alert("Error creating transaction. Check console for error logs");
-      console.error(error);
-      return;
-    }
-
-    try {
-      const response = await request("signPsbt", {
-        psbt: psbtBase64,
-        allowedSignHash: btc.SigHash.SINGLE | btc.SigHash.DEFAULT_ANYONECANPAY,
-        signInputs: {
-          [paymentAddress]: [0],
-          [ordinalsAddress]: [1],
-        },
-      });
-      if (response.status === "success") {
-        console.log(response);
-        alert(response.result.psbt);
-      } else {
-        const error = response;
-        console.log(error);
-        if (error.error.code === RpcErrorCode.USER_REJECTION) {
-          alert("Canceled");
-        } else {
-          alert(error.error.message);
-        }
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
   return (
     <div className="container">
       <h3>Sign transaction</h3>
-      <p>
-        Creates a PSBT sending the first UTXO from each of the payment and
-        ordinal addresses to the other address, with the change going to the
-        payment address.
-      </p>
+      <p>Sign a PSBT. This will open the confirmation dialog in the wallet.</p>
+      <div>
+        <label>PSBT</label>
+        <input
+          type="text"
+          value={psbtBase64}
+          onChange={(e) => setPsbt(e.target.value)}
+        />
+      </div>
+      <div>
+        <label>Broadcast</label>
+        <input
+          type="checkbox"
+          checked={broadcast}
+          onChange={() => setBroadcast(!broadcast)}
+        />
+      </div>
+      <br />
       <div>
         <button onClick={onSignTransactionClick}>Sign Transaction</button>
-        <button onClick={onSignTransactionRPC}>Sign Transaction RPC</button>
       </div>
     </div>
   );
