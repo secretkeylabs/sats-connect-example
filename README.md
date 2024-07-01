@@ -1,3 +1,5 @@
+## This repo is read-only now. Please see the /example directory in sats-connect for an actively maintained example app ##
+
 # Sats Connect Example
 
 This is an example of how to use the `sats-connect` package in your React app.
