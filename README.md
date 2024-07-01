@@ -2,7 +2,7 @@
 
 # Sats Connect Example
 
-This is an example of how to use the `sats-connect` package in your React app.
+This is an example of how to use the Sats Connect package in your React app.
 
 ## Installation and execution
 
