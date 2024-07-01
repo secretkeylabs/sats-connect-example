@@ -66,11 +66,14 @@ const SendBitcoin = ({ network, address, capabilities }: Props) => {
     }
   };
 
-  if (network !== BitcoinNetworkType.Testnet)
+  if (
+    network !== BitcoinNetworkType.Testnet &&
+    network !== BitcoinNetworkType.Signet
+  )
     return (
       <div className="container">
         <h3>Send Bitcoin</h3>
-        <div>Only available on testnet</div>
+        <div>Only available on testnet and Signet</div>
       </div>
     );
 

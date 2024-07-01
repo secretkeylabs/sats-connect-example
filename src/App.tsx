@@ -122,6 +122,8 @@ function App() {
   const toggleNetwork = () => {
     setNetwork(
       network === BitcoinNetworkType.Testnet
+        ? BitcoinNetworkType.Signet
+        : network === BitcoinNetworkType.Signet
         ? BitcoinNetworkType.Mainnet
         : BitcoinNetworkType.Testnet
     );
@@ -165,12 +167,16 @@ function App() {
   };
 
   const onConnectAccountClick = async () => {
-    const response = await request('getAccounts', {
-      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
-      message: 'SATS Connect Demo',
+    const response = await request("getAccounts", {
+      purposes: [
+        AddressPurpose.Ordinals,
+        AddressPurpose.Payment,
+        AddressPurpose.Stacks,
+      ],
+      message: "SATS Connect Demo",
     });
-    console.log("getAccounts ~ response:", response)
-    if (response.status === 'success') {
+    console.log("getAccounts ~ response:", response);
+    if (response.status === "success") {
       const paymentAddressItem = response.result.find(
         (address) => address.purpose === AddressPurpose.Payment
       );
@@ -194,7 +200,7 @@ function App() {
         console.error(response.error);
       }
     }
-  }
+  };
 
   const capabilityMessage =
     capabilityState === "loading"
@@ -245,7 +251,10 @@ function App() {
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
           </button>
-          <button style={{ height: 30, width: 180, marginLeft: 10 }} onClick={onConnectAccountClick}>
+          <button
+            style={{ height: 30, width: 180, marginLeft: 10 }}
+            onClick={onConnectAccountClick}
+          >
             Connect Account
           </button>
         </div>
@@ -312,30 +321,34 @@ function App() {
       </div>
 
       <h2>Stacks</h2>
-      <div>
-        <p>Stacks Address: {stacksAddress}</p>
-        <p>Stacks PubKey: {stacksPublicKey}</p>
-        <br />
+      {network === BitcoinNetworkType.Signet ? (
+        <div>Stacks functionality is not available for</div>
+      ) : (
+        <div>
+          <p>Stacks Address: {stacksAddress}</p>
+          <p>Stacks PubKey: {stacksPublicKey}</p>
+          <br />
 
-        <StxGetAccounts />
+          <StxGetAccounts />
 
-        <StxGetAddresses />
+          <StxGetAddresses />
 
-        <StxTransferStx address={stacksAddress} />
+          <StxTransferStx address={stacksAddress} />
 
-        <StxSignTransaction
-          network={network}
-          publicKey={stacksPublicKey || ""}
-        />
+          <StxSignTransaction
+            network={network}
+            publicKey={stacksPublicKey || ""}
+          />
 
-        <StxCallContract network={network} />
+          <StxCallContract network={network} />
 
-        <StxSignMessage network={network} />
+          <StxSignMessage network={network} />
 
-        <StxSignStructuredMessage network={network} />
+          <StxSignStructuredMessage network={network} />
 
-        <StxDeployContract network={network} />
-      </div>
+          <StxDeployContract network={network} />
+        </div>
+      )}
     </div>
   );
 }
