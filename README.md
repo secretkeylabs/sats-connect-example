@@ -1,4 +1,4 @@
-## This repo is read-only now. Please see the /example directory in sats-connect for an actively maintained example app ##
+## This repo is read-only now. Please see [sats-connect](https://github.com/secretkeylabs/sats-connect/tree/develop/example) for an actively maintained example app ##
 
 # Sats Connect Example
 
