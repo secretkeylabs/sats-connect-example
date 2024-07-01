@@ -1,11 +1,10 @@
 import type { Capability } from "sats-connect";
-import {
+import Wallet, {
   AddressPurpose,
   BitcoinNetworkType,
   getAddress,
   getCapabilities,
   getProviders,
-  request,
 } from "sats-connect";
 
 import CreateFileInscription from "./components/createFileInscription";
@@ -30,6 +29,7 @@ import { useEffect, useMemo, useState } from "react";
 import "./App.css";
 import CreateRepeatInscriptions from "./components/createRepeatInscriptions";
 import SignBulkTransaction from "./components/signBulkTransaction";
+import GetRunesBalance from "./components/getRuneBalance";
 
 function App() {
   const [paymentAddress, setPaymentAddress] = useLocalStorage("paymentAddress");
@@ -89,13 +89,14 @@ function App() {
   }, [network]);
 
   const isReady =
+    !!capabilities &&
     !!paymentAddress &&
     !!paymentPublicKey &&
     !!ordinalsAddress &&
-    !!ordinalsPublicKey &&
-    !!stacksAddress;
+    !!ordinalsPublicKey;
 
   const onWalletDisconnect = () => {
+    Wallet.disconnect();
     setPaymentAddress(undefined);
     setPaymentPublicKey(undefined);
     setOrdinalsAddress(undefined);
@@ -105,7 +106,7 @@ function App() {
 
   const handleGetInfo = async () => {
     try {
-      const response = await request("getInfo", null);
+      const response = await Wallet.request("getInfo", null);
 
       if (response.status === "success") {
         alert("Success. Check console for response");
@@ -165,12 +166,15 @@ function App() {
   };
 
   const onConnectAccountClick = async () => {
-    const response = await request('getAccounts', {
-      purposes: [AddressPurpose.Ordinals, AddressPurpose.Payment, AddressPurpose.Stacks],
-      message: 'SATS Connect Demo',
+    const response = await Wallet.request("getAccounts", {
+      purposes: [
+        AddressPurpose.Ordinals,
+        AddressPurpose.Payment,
+        AddressPurpose.Stacks,
+      ],
+      message: "SATS Connect Demo",
     });
-    console.log("getAccounts ~ response:", response)
-    if (response.status === 'success') {
+    if (response.status === "success") {
       const paymentAddressItem = response.result.find(
         (address) => address.purpose === AddressPurpose.Payment
       );
@@ -194,7 +198,7 @@ function App() {
         console.error(response.error);
       }
     }
-  }
+  };
 
   const capabilityMessage =
     capabilityState === "loading"
@@ -207,35 +211,20 @@ function App() {
       ? "Something went wrong with getting capabilities"
       : undefined;
 
-  if (capabilityMessage) {
-    return (
-      <div style={{ padding: 30 }}>
-        <h1>Sats Connect Test App - {network}</h1>
-        <div>{capabilityMessage}</div>
-      </div>
-    );
-  }
+  // if (capabilityMessage) {
+  //   return (
+  //     <div style={{ padding: 30 }}>
+  //       <h1>Sats Connect Test App - {network}</h1>
+  //       <div>{capabilityMessage}</div>
+  //     </div>
+  //   );
+  // }
 
   if (!isReady) {
     return (
       <div style={{ padding: 30 }}>
         <h1>Sats Connect Test App - {network}</h1>
         <div>Please connect your wallet to continue</div>
-        <h2>Available Wallets</h2>
-        <div>
-          {providers
-            ? providers.map((provider) => (
-                <button
-                  key={provider.id}
-                  className="provider"
-                  onClick={() => window.open(provider.chromeWebStoreUrl)}
-                >
-                  <img className="providerImg" src={provider.icon} />
-                  <p className="providerName">{provider.name}</p>
-                </button>
-              ))
-            : null}
-        </div>
         <div style={{ background: "lightgray", padding: 30, marginTop: 10 }}>
           <button style={{ height: 30, width: 180 }} onClick={toggleNetwork}>
             Switch Network
@@ -245,7 +234,10 @@ function App() {
           <button style={{ height: 30, width: 180 }} onClick={onConnectClick}>
             Connect
           </button>
-          <button style={{ height: 30, width: 180, marginLeft: 10 }} onClick={onConnectAccountClick}>
+          <button
+            style={{ height: 30, width: 180, marginLeft: 10 }}
+            onClick={onConnectAccountClick}
+          >
             Connect Account
           </button>
         </div>
@@ -300,6 +292,7 @@ function App() {
           network={network}
           capabilities={capabilities!}
         />
+        <GetRunesBalance />
 
         <CreateTextInscription network={network} capabilities={capabilities!} />
 
@@ -310,32 +303,35 @@ function App() {
 
         <CreateFileInscription network={network} capabilities={capabilities!} />
       </div>
+      {stacksAddress && (
+        <>
+          <h2>Stacks</h2>
+          <div>
+            <p>Stacks Address: {stacksAddress}</p>
+            <p>Stacks PubKey: {stacksPublicKey}</p>
+            <br />
 
-      <h2>Stacks</h2>
-      <div>
-        <p>Stacks Address: {stacksAddress}</p>
-        <p>Stacks PubKey: {stacksPublicKey}</p>
-        <br />
+            <StxGetAccounts />
 
-        <StxGetAccounts />
+            <StxGetAddresses />
 
-        <StxGetAddresses />
+            <StxTransferStx address={stacksAddress} />
 
-        <StxTransferStx address={stacksAddress} />
+            <StxSignTransaction
+              network={network}
+              publicKey={stacksPublicKey || ""}
+            />
 
-        <StxSignTransaction
-          network={network}
-          publicKey={stacksPublicKey || ""}
-        />
+            <StxCallContract network={network} />
 
-        <StxCallContract network={network} />
+            <StxSignMessage network={network} />
 
-        <StxSignMessage network={network} />
+            <StxSignStructuredMessage network={network} />
 
-        <StxSignStructuredMessage network={network} />
-
-        <StxDeployContract network={network} />
-      </div>
+            <StxDeployContract network={network} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
